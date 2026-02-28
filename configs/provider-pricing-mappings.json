@@ -1,0 +1,69 @@
+{
+  "berri": {
+    "modelsPath": "$",
+    "modelIdPaths": [
+      "$.key",
+      "$.litellm_provider",
+      "$.model"
+    ],
+    "inputCostPer1MPaths": [
+      "$.input_cost_per_token",
+      "$.input_cost_per_1k_tokens",
+      "$.input_cost_per_million_tokens",
+      "$.input_cost_per_1m_tokens"
+    ],
+    "outputCostPer1MPaths": [
+      "$.output_cost_per_token",
+      "$.output_cost_per_1k_tokens",
+      "$.output_cost_per_million_tokens",
+      "$.output_cost_per_1m_tokens"
+    ],
+    "currencyPaths": [
+      "$.currency"
+    ]
+  },
+  "portkey": {
+    "modelsPath": "$.models[*]",
+    "modelIdPaths": [
+      "$.id",
+      "$.name",
+      "$.model",
+      "$.slug"
+    ],
+    "inputCostPer1MPaths": [
+      "$.pricing.inputCostPer1M",
+      "$.pricing.input",
+      "$.input",
+      "$.pricing.input_cost_per_token",
+      "$.pricing.input_cost_per_1m"
+    ],
+    "outputCostPer1MPaths": [
+      "$.pricing.outputCostPer1M",
+      "$.pricing.output",
+      "$.output",
+      "$.pricing.output_cost_per_token",
+      "$.pricing.output_cost_per_1m"
+    ],
+    "currencyPaths": [
+      "$.pricing.currency",
+      "$.currency"
+    ]
+  },
+  "openrouter": {
+    "modelsPath": "$.data[*]",
+    "modelIdPaths": [
+      "$.id",
+      "$.canonical_slug",
+      "$.name"
+    ],
+    "inputCostPer1MPaths": [
+      "$.pricing.prompt"
+    ],
+    "outputCostPer1MPaths": [
+      "$.pricing.completion"
+    ],
+    "currencyPaths": [
+      "$.pricing.currency"
+    ]
+  }
+}

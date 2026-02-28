@@ -1,0 +1,198 @@
+{
+  "openai": {
+    "inputTokensPaths": [
+      "$.usage.input_tokens",
+      "$.usage.prompt_tokens",
+      "$.usage.inputTokenCount"
+    ],
+    "outputTokensPaths": [
+      "$.usage.output_tokens",
+      "$.usage.completion_tokens",
+      "$.usage.outputTokenCount"
+    ],
+    "totalTokensPaths": [
+      "$.usage.total_tokens",
+      "$.usage.totalTokenCount"
+    ]
+  },
+  "openai_responses": {
+    "inputTokensPaths": [
+      "$.usage.input_tokens",
+      "$.usage.prompt_tokens",
+      "$.usage.inputTokenCount"
+    ],
+    "outputTokensPaths": [
+      "$.usage.output_tokens",
+      "$.usage.completion_tokens",
+      "$.usage.outputTokenCount"
+    ],
+    "totalTokensPaths": [
+      "$.usage.total_tokens",
+      "$.usage.totalTokenCount"
+    ]
+  },
+  "openai_chat_completions": {
+    "inputTokensPaths": [
+      "$.usage.prompt_tokens",
+      "$.usage.input_tokens",
+      "$.usage.inputTokenCount"
+    ],
+    "outputTokensPaths": [
+      "$.usage.completion_tokens",
+      "$.usage.output_tokens",
+      "$.usage.outputTokenCount"
+    ],
+    "totalTokensPaths": [
+      "$.usage.total_tokens",
+      "$.usage.totalTokenCount"
+    ]
+  },
+  "openai_completions": {
+    "inputTokensPaths": [
+      "$.usage.prompt_tokens",
+      "$.usage.input_tokens"
+    ],
+    "outputTokensPaths": [
+      "$.usage.completion_tokens",
+      "$.usage.output_tokens"
+    ],
+    "totalTokensPaths": [
+      "$.usage.total_tokens"
+    ]
+  },
+  "openrouter": {
+    "inputTokensPaths": [
+      "$.usage.prompt_tokens",
+      "$.usage.input_tokens",
+      "$.usage.inputTokenCount"
+    ],
+    "outputTokensPaths": [
+      "$.usage.completion_tokens",
+      "$.usage.output_tokens",
+      "$.usage.outputTokenCount"
+    ],
+    "totalTokensPaths": [
+      "$.usage.total_tokens",
+      "$.usage.totalTokenCount"
+    ]
+  },
+  "anthropic": {
+    "inputTokensPaths": [
+      "$.usage.input_tokens"
+    ],
+    "outputTokensPaths": [
+      "$.usage.output_tokens"
+    ],
+    "totalTokensPaths": [
+      "$.usage.total_tokens"
+    ]
+  },
+  "google": {
+    "inputTokensPaths": [
+      "$.usageMetadata.promptTokenCount",
+      "$.usage.prompt_tokens"
+    ],
+    "outputTokensPaths": [
+      "$.usageMetadata.candidatesTokenCount",
+      "$.usage.completion_tokens"
+    ],
+    "totalTokensPaths": [
+      "$.usageMetadata.totalTokenCount",
+      "$.usage.total_tokens"
+    ]
+  },
+  "meta": {
+    "inputTokensPaths": [
+      "$.usage.prompt_tokens",
+      "$.usage.input_tokens"
+    ],
+    "outputTokensPaths": [
+      "$.usage.completion_tokens",
+      "$.usage.output_tokens"
+    ],
+    "totalTokensPaths": [
+      "$.usage.total_tokens"
+    ]
+  },
+  "mistral": {
+    "inputTokensPaths": [
+      "$.usage.prompt_tokens",
+      "$.usage.input_tokens"
+    ],
+    "outputTokensPaths": [
+      "$.usage.completion_tokens",
+      "$.usage.output_tokens"
+    ],
+    "totalTokensPaths": [
+      "$.usage.total_tokens"
+    ]
+  },
+  "cohere": {
+    "inputTokensPaths": [
+      "$.usage.prompt_tokens",
+      "$.usage.input_tokens",
+      "$.meta.billed_units.input_tokens"
+    ],
+    "outputTokensPaths": [
+      "$.usage.completion_tokens",
+      "$.usage.output_tokens",
+      "$.meta.billed_units.output_tokens"
+    ],
+    "totalTokensPaths": [
+      "$.usage.total_tokens",
+      "$.meta.billed_units.total_tokens"
+    ]
+  },
+  "xai": {
+    "inputTokensPaths": [
+      "$.usage.prompt_tokens",
+      "$.usage.input_tokens"
+    ],
+    "outputTokensPaths": [
+      "$.usage.completion_tokens",
+      "$.usage.output_tokens"
+    ],
+    "totalTokensPaths": [
+      "$.usage.total_tokens"
+    ]
+  },
+  "deepseek": {
+    "inputTokensPaths": [
+      "$.usage.prompt_tokens",
+      "$.usage.input_tokens"
+    ],
+    "outputTokensPaths": [
+      "$.usage.completion_tokens",
+      "$.usage.output_tokens"
+    ],
+    "totalTokensPaths": [
+      "$.usage.total_tokens"
+    ]
+  },
+  "qwen": {
+    "inputTokensPaths": [
+      "$.usage.prompt_tokens",
+      "$.usage.input_tokens"
+    ],
+    "outputTokensPaths": [
+      "$.usage.completion_tokens",
+      "$.usage.output_tokens"
+    ],
+    "totalTokensPaths": [
+      "$.usage.total_tokens"
+    ]
+  },
+  "default": {
+    "inputTokensPaths": [
+      "$.usage.prompt_tokens",
+      "$.usage.input_tokens"
+    ],
+    "outputTokensPaths": [
+      "$.usage.completion_tokens",
+      "$.usage.output_tokens"
+    ],
+    "totalTokensPaths": [
+      "$.usage.total_tokens"
+    ]
+  }
+}

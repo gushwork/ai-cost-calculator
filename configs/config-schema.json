@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://llmcost.dev/schemas/configs/config-schema.json",
+  "title": "llmcost shared config schema",
+  "type": "object",
+  "required": [
+    "responseMappings",
+    "modelAliases",
+    "providerPricingMappings"
+  ],
+  "properties": {
+    "responseMappings": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "inputTokensPaths",
+          "outputTokensPaths",
+          "totalTokensPaths"
+        ],
+        "properties": {
+          "inputTokensPaths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "outputTokensPaths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "totalTokensPaths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "modelAliases": {
+      "type": "object",
+      "properties": {
+        "canonical": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "normalized": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "canonical",
+        "normalized"
+      ]
+    },
+    "providerPricingMappings": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "modelsPath",
+          "modelIdPaths",
+          "inputCostPer1MPaths",
+          "outputCostPer1MPaths"
+        ],
+        "properties": {
+          "modelsPath": {
+            "type": "string"
+          },
+          "modelIdPaths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "inputCostPer1MPaths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "outputCostPer1MPaths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "currencyPaths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

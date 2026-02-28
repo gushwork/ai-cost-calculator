@@ -1,0 +1,88 @@
+{
+  "canonical": {
+    "gpt-4o-mini": [
+      "openai/gpt-4o-mini",
+      "openrouter/openai/gpt-4o-mini",
+      "gpt-4o-mini-2024-07-18"
+    ],
+    "gpt-4o": [
+      "openai/gpt-4o",
+      "openrouter/openai/gpt-4o",
+      "gpt-4o-2024-08-06"
+    ],
+    "claude-3-5-sonnet": [
+      "anthropic/claude-3-5-sonnet",
+      "openrouter/anthropic/claude-3-5-sonnet",
+      "claude-3-5-sonnet-20241022"
+    ],
+    "gemini-1.5-pro": [
+      "google/gemini-1.5-pro",
+      "openrouter/google/gemini-1.5-pro",
+      "gemini-1.5-pro-latest"
+    ],
+    "llama-3.1-70b-instruct": [
+      "meta-llama/llama-3.1-70b-instruct",
+      "meta/llama-3.1-70b-instruct",
+      "openrouter/meta-llama/llama-3.1-70b-instruct"
+    ],
+    "mistral-large": [
+      "mistralai/mistral-large",
+      "mistral/mistral-large",
+      "openrouter/mistralai/mistral-large"
+    ],
+    "command-r-plus": [
+      "cohere/command-r-plus",
+      "openrouter/cohere/command-r-plus"
+    ],
+    "grok-2": [
+      "xai/grok-2",
+      "openrouter/xai/grok-2"
+    ],
+    "deepseek-chat": [
+      "deepseek/deepseek-chat",
+      "openrouter/deepseek/deepseek-chat"
+    ],
+    "qwen-2.5-72b-instruct": [
+      "qwen/qwen-2.5-72b-instruct",
+      "openrouter/qwen/qwen-2.5-72b-instruct"
+    ]
+  },
+  "normalized": {
+    "openai/gpt-4o-mini": "gpt-4o-mini",
+    "openrouter/openai/gpt-4o-mini": "gpt-4o-mini",
+    "gpt-4o-mini-2024-07-18": "gpt-4o-mini",
+    "gpt-4o-mini": "gpt-4o-mini",
+    "openai/gpt-4o": "gpt-4o",
+    "openrouter/openai/gpt-4o": "gpt-4o",
+    "gpt-4o-2024-08-06": "gpt-4o",
+    "gpt-4o": "gpt-4o",
+    "anthropic/claude-3-5-sonnet": "claude-3-5-sonnet",
+    "openrouter/anthropic/claude-3-5-sonnet": "claude-3-5-sonnet",
+    "claude-3-5-sonnet-20241022": "claude-3-5-sonnet",
+    "claude-3-5-sonnet": "claude-3-5-sonnet",
+    "google/gemini-1.5-pro": "gemini-1.5-pro",
+    "openrouter/google/gemini-1.5-pro": "gemini-1.5-pro",
+    "gemini-1.5-pro-latest": "gemini-1.5-pro",
+    "gemini-1.5-pro": "gemini-1.5-pro",
+    "meta-llama/llama-3.1-70b-instruct": "llama-3.1-70b-instruct",
+    "meta/llama-3.1-70b-instruct": "llama-3.1-70b-instruct",
+    "openrouter/meta-llama/llama-3.1-70b-instruct": "llama-3.1-70b-instruct",
+    "llama-3.1-70b-instruct": "llama-3.1-70b-instruct",
+    "mistralai/mistral-large": "mistral-large",
+    "mistral/mistral-large": "mistral-large",
+    "openrouter/mistralai/mistral-large": "mistral-large",
+    "mistral-large": "mistral-large",
+    "cohere/command-r-plus": "command-r-plus",
+    "openrouter/cohere/command-r-plus": "command-r-plus",
+    "command-r-plus": "command-r-plus",
+    "xai/grok-2": "grok-2",
+    "openrouter/xai/grok-2": "grok-2",
+    "grok-2": "grok-2",
+    "deepseek/deepseek-chat": "deepseek-chat",
+    "openrouter/deepseek/deepseek-chat": "deepseek-chat",
+    "deepseek-chat": "deepseek-chat",
+    "qwen/qwen-2.5-72b-instruct": "qwen-2.5-72b-instruct",
+    "openrouter/qwen/qwen-2.5-72b-instruct": "qwen-2.5-72b-instruct",
+    "qwen-2.5-72b-instruct": "qwen-2.5-72b-instruct"
+  }
+}
