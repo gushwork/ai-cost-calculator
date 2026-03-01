@@ -18,18 +18,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v5
 
-      - run: pip install build
+      - run: uv sync --group dev
 
-      - run: pip install -e ".[dev]"
+      - run: uv run pytest tests/ --ignore=tests/test_e2e_live.py -v
 
-      - run: pytest tests/ --ignore=tests/test_e2e_live.py -v
+      - run: uv build
 
-      - run: python -m build
-
-      - uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: python/dist/
+      - name: Publish to PyPI
+        working-directory: ./sdk/python
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          uv publish
