@@ -1,13 +1,12 @@
 name: Publish to npm
 
 on:
-  release:
-    types: [published]
+  workflow_call:
+  workflow_dispatch:
 
 jobs:
   publish:
     name: Build and Publish
-    if: endsWith(github.event.release.tag_name, '-node')
     runs-on: ubuntu-latest
     permissions:
       contents: read

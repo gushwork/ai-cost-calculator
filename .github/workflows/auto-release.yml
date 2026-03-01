@@ -13,6 +13,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    outputs:
+      node-changed: ${{ steps.node.outputs.changed }}
+      python-changed: ${{ steps.python.outputs.changed }}
 
     steps:
       - uses: actions/checkout@v4
@@ -70,3 +73,15 @@ jobs:
               name: `Python SDK v${version}`,
               generate_release_notes: true,
             });
+
+  publish-npm:
+    needs: release
+    if: needs.release.outputs.node-changed == 'true'
+    uses: ./.github/workflows/publish-npm.yml
+    secrets: inherit
+
+  publish-pypi:
+    needs: release
+    if: needs.release.outputs.python-changed == 'true'
+    uses: ./.github/workflows/publish-pypi.yml
+    secrets: inherit
