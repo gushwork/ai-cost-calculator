@@ -32,12 +32,12 @@ jobs:
 
       - run: bun test tests/unit
 
-      - run: npm run build
+      - run: bun run build
 
       - name: Bundle shared configs into package
-        run: cp ../configs/*.json dist/src/data/
+        run: cp ../configs/*.json dist/data/
 
-      - run: npm publish --provenance --access public
+      - run: bun publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_API_TOKEN }}
 
@@ -61,8 +61,8 @@ jobs:
       - name: Install published package and run smoke test
         run: |
           mkdir /tmp/smoke-test && cd /tmp/smoke-test
-          npm init -y
-          sed -i 's/"type": "commonjs"/"type": "module"/' package.json || true
-          npm install ai-cost-calculator@latest
+          bun init -y
+          node -e "const p=require('./package.json'); p.type='module'; require('fs').writeFileSync('package.json', JSON.stringify(p, null, 2))"
+          bun install ai-cost-calculator@latest
           cp $GITHUB_WORKSPACE/node/tests/post-publish/smoke.mjs .
-          node smoke.mjs
+          bun smoke.mjs

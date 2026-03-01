@@ -1,6 +1,6 @@
 {
   "name": "ai-cost-calculator",
-  "version": "0.1.19",
+  "version": "0.1.20",
   "description": "TypeScript SDK for calculating LLM API costs",
   "type": "module",
   "main": "./dist/index.js",
@@ -15,7 +15,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "bun test",
     "test:e2e": "bun test tests/e2e"
