@@ -37,6 +37,13 @@ def _to_cost_per_1m(entry: dict[str, Any], token_key: str, per_1k_key: str) -> f
     return 0.0
 
 
+def _per_token_to_per_1m(entry: dict[str, Any], token_key: str) -> float | None:
+    token_cost = _parse_number(entry.get(token_key))
+    if token_cost is not None and token_cost > 0:
+        return token_cost * 1_000_000
+    return None
+
+
 def clear_berri_cache() -> None:
     global _cache, _provider_cache
     _cache = None
@@ -77,6 +84,9 @@ def _fetch_berri_data() -> tuple[dict[str, NormalizedPricingModel], dict[str, st
         if input_cost <= 0 and output_cost <= 0:
             continue
 
+        cache_read_cost = _per_token_to_per_1m(entry, "cache_read_input_token_cost")
+        cache_creation_cost = _per_token_to_per_1m(entry, "cache_creation_input_token_cost")
+
         norm_key = normalize_model_id(model_id)
         bare_key = strip_provider_prefix(norm_key)
         normalized = NormalizedPricingModel(
@@ -84,6 +94,8 @@ def _fetch_berri_data() -> tuple[dict[str, NormalizedPricingModel], dict[str, st
             input_cost_per_1m=input_cost,
             output_cost_per_1m=output_cost,
             currency="USD",
+            cache_read_cost_per_1m=cache_read_cost,
+            cache_creation_cost_per_1m=cache_creation_cost,
         )
         out[norm_key] = normalized
         if bare_key != norm_key:

@@ -18,6 +18,12 @@
       "$.output_cost_per_million_tokens",
       "$.output_cost_per_1m_tokens"
     ],
+    "cacheReadCostPer1MPaths": [
+      "$.cache_read_input_token_cost"
+    ],
+    "cacheCreationCostPer1MPaths": [
+      "$.cache_creation_input_token_cost"
+    ],
     "currencyPaths": [
       "$.currency"
     ]
@@ -61,6 +67,12 @@
     ],
     "outputCostPer1MPaths": [
       "$.pricing.completion"
+    ],
+    "cacheReadCostPer1MPaths": [
+      "$.pricing.input_cache_read"
+    ],
+    "cacheCreationCostPer1MPaths": [
+      "$.pricing.input_cache_write"
     ],
     "currencyPaths": [
       "$.pricing.currency"

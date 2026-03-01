@@ -74,12 +74,17 @@ def get_openrouter_pricing_map() -> dict[str, NormalizedPricingModel]:
         if input_cost <= 0 and output_cost <= 0:
             continue
 
+        cache_read_cost = _parse_per_token_to_per_1m(pricing.get("input_cache_read"))
+        cache_creation_cost = _parse_per_token_to_per_1m(pricing.get("input_cache_write"))
+
         bare_id = strip_provider_prefix(normalize_model_id(model_raw))
         normalized = NormalizedPricingModel(
             model_id=bare_id,
             input_cost_per_1m=input_cost,
             output_cost_per_1m=output_cost,
             currency="USD",
+            cache_read_cost_per_1m=cache_read_cost,
+            cache_creation_cost_per_1m=cache_creation_cost,
         )
         keys = {
             normalize_model_id(model_raw),

@@ -23,6 +23,8 @@ def test_extract_prompt_and_completion_tokens():
     assert usage.input_tokens == 1000
     assert usage.output_tokens == 250
     assert usage.total_tokens == 1250
+    assert usage.cache_read_tokens == 0
+    assert usage.cache_creation_tokens == 0
 
 
 def test_extract_total_tokens_only():
@@ -30,6 +32,8 @@ def test_extract_total_tokens_only():
     assert usage.input_tokens == 777
     assert usage.output_tokens == 0
     assert usage.total_tokens == 777
+    assert usage.cache_read_tokens == 0
+    assert usage.cache_creation_tokens == 0
 
 
 def test_extract_openai_responses_usage_tokens():

@@ -13,6 +13,9 @@
     "totalTokensPaths": [
       "$.usage.total_tokens",
       "$.usage.totalTokenCount"
+    ],
+    "cacheReadTokensPaths": [
+      "$.usage.prompt_tokens_details.cached_tokens"
     ]
   },
   "openai_responses": {
@@ -29,6 +32,9 @@
     "totalTokensPaths": [
       "$.usage.total_tokens",
       "$.usage.totalTokenCount"
+    ],
+    "cacheReadTokensPaths": [
+      "$.usage.prompt_tokens_details.cached_tokens"
     ]
   },
   "openai_chat_completions": {
@@ -45,6 +51,9 @@
     "totalTokensPaths": [
       "$.usage.total_tokens",
       "$.usage.totalTokenCount"
+    ],
+    "cacheReadTokensPaths": [
+      "$.usage.prompt_tokens_details.cached_tokens"
     ]
   },
   "openai_completions": {
@@ -58,6 +67,9 @@
     ],
     "totalTokensPaths": [
       "$.usage.total_tokens"
+    ],
+    "cacheReadTokensPaths": [
+      "$.usage.prompt_tokens_details.cached_tokens"
     ]
   },
   "openrouter": {
@@ -74,6 +86,12 @@
     "totalTokensPaths": [
       "$.usage.total_tokens",
       "$.usage.totalTokenCount"
+    ],
+    "cacheReadTokensPaths": [
+      "$.usage.prompt_tokens_details.cached_tokens"
+    ],
+    "cacheCreationTokensPaths": [
+      "$.usage.prompt_tokens_details.cache_write_tokens"
     ]
   },
   "anthropic": {
@@ -85,7 +103,14 @@
     ],
     "totalTokensPaths": [
       "$.usage.total_tokens"
-    ]
+    ],
+    "cacheReadTokensPaths": [
+      "$.usage.cache_read_input_tokens"
+    ],
+    "cacheCreationTokensPaths": [
+      "$.usage.cache_creation_input_tokens"
+    ],
+    "inputIncludesCacheRead": false
   },
   "google": {
     "inputTokensPaths": [
@@ -99,6 +124,9 @@
     "totalTokensPaths": [
       "$.usageMetadata.totalTokenCount",
       "$.usage.total_tokens"
+    ],
+    "cacheReadTokensPaths": [
+      "$.usageMetadata.cachedContentTokenCount"
     ]
   },
   "meta": {
@@ -125,6 +153,9 @@
     ],
     "totalTokensPaths": [
       "$.usage.total_tokens"
+    ],
+    "cacheReadTokensPaths": [
+      "$.usage.prompt_tokens_details.cached_tokens"
     ]
   },
   "cohere": {
@@ -154,6 +185,9 @@
     ],
     "totalTokensPaths": [
       "$.usage.total_tokens"
+    ],
+    "cacheReadTokensPaths": [
+      "$.usage.prompt_tokens_details.cached_tokens"
     ]
   },
   "deepseek": {
@@ -167,6 +201,9 @@
     ],
     "totalTokensPaths": [
       "$.usage.total_tokens"
+    ],
+    "cacheReadTokensPaths": [
+      "$.usage.prompt_cache_hit_tokens"
     ]
   },
   "qwen": {
@@ -207,6 +244,13 @@
     ],
     "totalTokensPaths": [
       "$.usage.total_tokens"
+    ],
+    "cacheReadTokensPaths": [
+      "$.usage.prompt_tokens_details.cached_tokens",
+      "$.usage.prompt_cache_hit_tokens"
+    ],
+    "cacheCreationTokensPaths": [
+      "$.usage.prompt_tokens_details.cache_write_tokens"
     ]
   }
 }

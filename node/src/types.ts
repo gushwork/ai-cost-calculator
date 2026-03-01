@@ -9,6 +9,8 @@ export interface TokenUsage {
   inputTokens: number;
   outputTokens: number;
   totalTokens: number;
+  cacheReadTokens?: number;
+  cacheCreationTokens?: number;
 }
 
 export interface CalculatorInput {
@@ -24,6 +26,9 @@ export interface ResponseProviderMapping {
   inputTokensPaths: string[];
   outputTokensPaths: string[];
   totalTokensPaths: string[];
+  cacheReadTokensPaths?: string[];
+  cacheCreationTokensPaths?: string[];
+  inputIncludesCacheRead?: boolean;
 }
 
 export interface ResponseMappingsConfig {
@@ -35,6 +40,8 @@ export interface PricingProviderMapping {
   modelIdPaths: string[];
   inputCostPer1MPaths: string[];
   outputCostPer1MPaths: string[];
+  cacheReadCostPer1MPaths?: string[];
+  cacheCreationCostPer1MPaths?: string[];
   currencyPaths?: string[];
 }
 
@@ -46,5 +53,7 @@ export interface NormalizedPricingModel {
   modelId: string;
   inputCostPer1M: number;
   outputCostPer1M: number;
+  cacheReadCostPer1M?: number;
+  cacheCreationCostPer1M?: number;
   currency: CurrencyCode;
 }

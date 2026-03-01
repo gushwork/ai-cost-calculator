@@ -37,6 +37,8 @@ describe("responseTransformer", () => {
       inputTokens: 1000,
       outputTokens: 250,
       totalTokens: 1250,
+      cacheReadTokens: 0,
+      cacheCreationTokens: 0,
     });
   });
 
@@ -54,6 +56,8 @@ describe("responseTransformer", () => {
       inputTokens: 777,
       outputTokens: 0,
       totalTokens: 777,
+      cacheReadTokens: 0,
+      cacheCreationTokens: 0,
     });
   });
 
@@ -73,6 +77,8 @@ describe("responseTransformer", () => {
       inputTokens: 321,
       outputTokens: 123,
       totalTokens: 444,
+      cacheReadTokens: 0,
+      cacheCreationTokens: 0,
     });
   });
 
@@ -92,6 +98,8 @@ describe("responseTransformer", () => {
       inputTokens: 111,
       outputTokens: 22,
       totalTokens: 133,
+      cacheReadTokens: 0,
+      cacheCreationTokens: 0,
     });
   });
 

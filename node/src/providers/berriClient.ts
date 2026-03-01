@@ -28,6 +28,12 @@ function toCostPer1M(entry: Record<string, unknown>, tokenKey: string, per1kKey:
   return 0;
 }
 
+function perTokenToPer1M(entry: Record<string, unknown>, tokenKey: string): number | undefined {
+  const tokenCost = parseNumber(entry[tokenKey]);
+  if (tokenCost !== null && tokenCost > 0) return tokenCost * 1_000_000;
+  return undefined;
+}
+
 function addModel(
   map: Map<string, NormalizedPricingModel>,
   modelId: string,
@@ -96,11 +102,16 @@ async function fetchBerriData(): Promise<BerriData> {
       continue;
     }
 
+    const cacheReadCostPer1M = perTokenToPer1M(value, "cache_read_input_token_cost");
+    const cacheCreationCostPer1M = perTokenToPer1M(value, "cache_creation_input_token_cost");
+
     const bareKey = stripProviderPrefix(normalizeModelId(key));
     const normalized: NormalizedPricingModel = {
       modelId: bareKey,
       inputCostPer1M,
       outputCostPer1M,
+      cacheReadCostPer1M,
+      cacheCreationCostPer1M,
       currency: "USD",
     };
 

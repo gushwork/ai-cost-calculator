@@ -26,6 +26,8 @@ type OpenRouterModelPayload = {
   pricing?: {
     prompt?: unknown;
     completion?: unknown;
+    input_cache_read?: unknown;
+    input_cache_write?: unknown;
   };
 };
 
@@ -62,11 +64,16 @@ async function fetchOpenRouterPricing(): Promise<Map<string, NormalizedPricingMo
     const outputCostPer1M = parsePerTokenToPer1M(model.pricing?.completion) ?? inputCostPer1M;
     if (inputCostPer1M <= 0 && outputCostPer1M <= 0) continue;
 
+    const cacheReadCostPer1M = parsePerTokenToPer1M(model.pricing?.input_cache_read) ?? undefined;
+    const cacheCreationCostPer1M = parsePerTokenToPer1M(model.pricing?.input_cache_write) ?? undefined;
+
     const bareId = stripProviderPrefix(normalizeModelId(modelRaw));
     const normalized: NormalizedPricingModel = {
       modelId: bareId,
       inputCostPer1M,
       outputCostPer1M,
+      cacheReadCostPer1M,
+      cacheCreationCostPer1M,
       currency: "USD",
     };
 

@@ -42,6 +42,11 @@ def extract_token_usage(response: Any, provider: str) -> TokenUsage:
             f'Could not extract token usage for provider "{provider}".'
         )
 
+    cache_read_paths = mapping.get("cacheReadTokensPaths", [])
+    cache_creation_paths = mapping.get("cacheCreationTokensPaths", [])
+    cache_read = _get_first_numeric_value(response, cache_read_paths) if cache_read_paths else 0.0
+    cache_creation = _get_first_numeric_value(response, cache_creation_paths) if cache_creation_paths else 0.0
+
     if input_tokens is not None or output_tokens is not None:
         input_value = input_tokens or 0.0
         output_value = output_tokens or 0.0
@@ -49,13 +54,25 @@ def extract_token_usage(response: Any, provider: str) -> TokenUsage:
             input_tokens=input_value,
             output_tokens=output_value,
             total_tokens=total_tokens or (input_value + output_value),
+            cache_read_tokens=cache_read or 0.0,
+            cache_creation_tokens=cache_creation or 0.0,
         )
 
     return TokenUsage(
         input_tokens=total_tokens or 0.0,
         output_tokens=0.0,
         total_tokens=total_tokens or 0.0,
+        cache_read_tokens=cache_read or 0.0,
+        cache_creation_tokens=cache_creation or 0.0,
     )
+
+
+def get_input_includes_cache_read(provider: str) -> bool:
+    mappings = load_response_mappings_config()
+    mapping = mappings.get(provider) or mappings.get("default")
+    if not mapping:
+        return True
+    return mapping.get("inputIncludesCacheRead", True)
 
 
 def _get_first_string_value(response: Any, paths: list[str]) -> str | None:

@@ -43,6 +43,13 @@ export function extractTokenUsage(response: unknown, provider: string): TokenUsa
     );
   }
 
+  const cacheRead = mapping.cacheReadTokensPaths?.length
+    ? getFirstNumericValue(response, mapping.cacheReadTokensPaths) ?? 0
+    : 0;
+  const cacheCreation = mapping.cacheCreationTokensPaths?.length
+    ? getFirstNumericValue(response, mapping.cacheCreationTokensPaths) ?? 0
+    : 0;
+
   if (input !== null || output !== null) {
     const inputTokens = input ?? 0;
     const outputTokens = output ?? 0;
@@ -50,6 +57,8 @@ export function extractTokenUsage(response: unknown, provider: string): TokenUsa
       inputTokens,
       outputTokens,
       totalTokens: total ?? inputTokens + outputTokens,
+      cacheReadTokens: cacheRead,
+      cacheCreationTokens: cacheCreation,
     };
   }
 
@@ -57,7 +66,15 @@ export function extractTokenUsage(response: unknown, provider: string): TokenUsa
     inputTokens: total ?? 0,
     outputTokens: 0,
     totalTokens: total ?? 0,
+    cacheReadTokens: cacheRead,
+    cacheCreationTokens: cacheCreation,
   };
+}
+
+export function getInputIncludesCacheRead(provider: string): boolean {
+  const mappings = loadResponseMappingsConfig();
+  const mapping = mappings[provider] ?? mappings.default;
+  return mapping?.inputIncludesCacheRead !== false;
 }
 
 function getFirstStringValue(response: unknown, paths: string[]): string | null {

@@ -1,16 +1,14 @@
 import {
   extractResponseMetadata,
   extractTokenUsage,
+  getInputIncludesCacheRead,
 } from "../data/responseTransformer.js";
 import { stripProviderPrefix } from "../data/modelResolver.js";
 import { ModelNotFoundError, PricingUnavailableError } from "../errors.js";
 import { getBerriPricingMap } from "../providers/berriClient.js";
 import type { CostResult } from "../types.js";
 import { Calculator } from "./Calculator.js";
-
-function round12(value: number): number {
-  return Number(value.toFixed(12));
-}
+import { computeCost } from "./computeCost.js";
 
 export class BerrilmBasedCalculator extends Calculator {
   static override async getCost(response: unknown): Promise<CostResult> {
@@ -31,10 +29,7 @@ export class BerrilmBasedCalculator extends Calculator {
       );
     }
 
-    const cost =
-      (usage.inputTokens / 1_000_000) * pricing.inputCostPer1M +
-      (usage.outputTokens / 1_000_000) * pricing.outputCostPer1M;
-
-    return { currency: "USD", cost: round12(cost) };
+    const cost = computeCost(usage, pricing, getInputIncludesCacheRead(provider));
+    return { currency: "USD", cost };
   }
 }

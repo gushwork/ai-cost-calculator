@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import Dict, List, TypedDict
+from dataclasses import dataclass, field
+from typing import Dict, List, Optional, TypedDict
 
 
 class CostResult(TypedDict):
@@ -17,6 +17,8 @@ class TokenUsage:
     input_tokens: float
     output_tokens: float
     total_tokens: float
+    cache_read_tokens: float = 0
+    cache_creation_tokens: float = 0
 
 
 @dataclass(frozen=True)
@@ -25,12 +27,17 @@ class NormalizedPricingModel:
     input_cost_per_1m: float
     output_cost_per_1m: float
     currency: str = "USD"
+    cache_read_cost_per_1m: Optional[float] = None
+    cache_creation_cost_per_1m: Optional[float] = None
 
 
-class ResponseProviderMapping(TypedDict):
+class ResponseProviderMapping(TypedDict, total=False):
     inputTokensPaths: List[str]
     outputTokensPaths: List[str]
     totalTokensPaths: List[str]
+    cacheReadTokensPaths: List[str]
+    cacheCreationTokensPaths: List[str]
+    inputIncludesCacheRead: bool
 
 
 ResponseMappingsConfig = Dict[str, ResponseProviderMapping]
