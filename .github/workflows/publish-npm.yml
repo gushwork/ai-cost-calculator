@@ -3,7 +3,7 @@ name: Publish to npm
 on:
   push:
     tags:
-      - "node/v*"
+      - "v*-node"
 
 jobs:
   publish:

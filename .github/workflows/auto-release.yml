@@ -52,7 +52,7 @@ jobs:
             await github.rest.repos.createRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              tag_name: `node/v${version}`,
+              tag_name: `v${version}-node`,
               name: `Node SDK v${version}`,
               generate_release_notes: true,
             });
@@ -66,7 +66,7 @@ jobs:
             await github.rest.repos.createRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              tag_name: `python/v${version}`,
+              tag_name: `v${version}-python`,
               name: `Python SDK v${version}`,
               generate_release_notes: true,
             });
