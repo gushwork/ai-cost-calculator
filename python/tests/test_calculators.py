@@ -4,7 +4,6 @@ from ai_cost_calculator.calculator.best_effort import BestEffortCalculator
 from ai_cost_calculator.calculator.berri import BerrilmBasedCalculator
 from ai_cost_calculator.calculator.openrouter import OpenRouterBasedCalculator
 from ai_cost_calculator.calculator.portkey import PortkeyBasedCalculator
-from ai_cost_calculator.data.alias_builder import clear_alias_cache
 from ai_cost_calculator.providers.berri_client import clear_berri_cache
 from ai_cost_calculator.providers.helicone_client import clear_helicone_cache
 from ai_cost_calculator.providers.openrouter_client import clear_openrouter_cache
@@ -26,7 +25,6 @@ def setup_function():
     clear_openrouter_cache()
     clear_portkey_cache()
     clear_helicone_cache()
-    clear_alias_cache()
 
 
 def teardown_function():
@@ -34,7 +32,6 @@ def teardown_function():
     clear_openrouter_cache()
     clear_portkey_cache()
     clear_helicone_cache()
-    clear_alias_cache()
 
 
 def _mock_http_response(text: str) -> Mock:
@@ -129,6 +126,41 @@ def test_best_effort_forwards_options(mock_get):
         provider="openai",
     )
     assert result == {"currency": "USD", "cost": 0.00045}
+
+
+@patch("httpx.get")
+def test_berri_calculator_includes_tool_call_cost(mock_get):
+    mock_get.return_value = _mock_http_response(
+        '{"claude-sonnet-4-20250514":{"input_cost_per_token":0.000003,"output_cost_per_token":0.000015,"litellm_provider":"anthropic","tool_use_system_prompt_tokens":159}}'
+    )
+    result = BerrilmBasedCalculator.get_cost(
+        {
+            "model": "claude-sonnet-4-20250514",
+            "usage": {"input_tokens": 1000, "output_tokens": 500, "total_tokens": 1500},
+            "content": [
+                {"type": "text", "text": "Here is the weather."},
+                {"type": "tool_use", "id": "tu_1", "name": "get_weather", "input": {}},
+            ],
+        }
+    )
+    assert result["currency"] == "USD"
+    assert result["cost"] > 0
+    assert "tool_call_cost" in result
+    assert abs(result["tool_call_cost"] - 159 * 0.000003) < 1e-10
+
+
+@patch("httpx.get")
+def test_berri_calculator_omits_tool_call_cost_without_tools(mock_get):
+    mock_get.return_value = _mock_http_response(
+        '{"claude-sonnet-4-20250514":{"input_cost_per_token":0.000003,"output_cost_per_token":0.000015,"litellm_provider":"anthropic","tool_use_system_prompt_tokens":159}}'
+    )
+    result = BerrilmBasedCalculator.get_cost(
+        {
+            "model": "claude-sonnet-4-20250514",
+            "usage": {"input_tokens": 1000, "output_tokens": 500, "total_tokens": 1500},
+        }
+    )
+    assert "tool_call_cost" not in result
 
 
 def test_best_effort_fallback():

@@ -71,6 +71,57 @@ export function extractTokenUsage(response: unknown, provider: string): TokenUsa
   };
 }
 
+export function detectToolCalls(response: unknown): boolean {
+  if (response == null || typeof response !== "object") return false;
+  const obj = response as Record<string, unknown>;
+
+  // OpenAI chat completions: choices[].message.tool_calls
+  const choices = obj.choices;
+  if (Array.isArray(choices)) {
+    for (const choice of choices) {
+      const message = (choice as Record<string, unknown>)?.message;
+      if (message && typeof message === "object") {
+        const toolCalls = (message as Record<string, unknown>).tool_calls;
+        if (Array.isArray(toolCalls) && toolCalls.length > 0) return true;
+      }
+    }
+  }
+
+  // Anthropic: content[].type === "tool_use"
+  const content = obj.content;
+  if (Array.isArray(content)) {
+    for (const block of content) {
+      if ((block as Record<string, unknown>)?.type === "tool_use") return true;
+    }
+  }
+
+  // OpenAI Responses API: output[].type === "function_call"
+  const output = obj.output;
+  if (Array.isArray(output)) {
+    for (const item of output) {
+      if ((item as Record<string, unknown>)?.type === "function_call") return true;
+    }
+  }
+
+  // Google Gemini: candidates[].content.parts[].functionCall
+  const candidates = obj.candidates;
+  if (Array.isArray(candidates)) {
+    for (const candidate of candidates) {
+      const parts = (candidate as Record<string, unknown>)?.content;
+      if (parts && typeof parts === "object") {
+        const partsList = (parts as Record<string, unknown>).parts;
+        if (Array.isArray(partsList)) {
+          for (const part of partsList) {
+            if ((part as Record<string, unknown>)?.functionCall) return true;
+          }
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
 export function getInputIncludesCacheRead(provider: string): boolean {
   const mappings = loadResponseMappingsConfig();
   const mapping = mappings[provider] ?? mappings.default;

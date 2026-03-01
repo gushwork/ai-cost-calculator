@@ -1,7 +1,6 @@
 import json
 from unittest.mock import Mock, patch
 
-from ai_cost_calculator.data.alias_builder import clear_alias_cache
 from ai_cost_calculator.providers.portkey_client import clear_portkey_cache, get_portkey_pricing_map
 
 
@@ -37,14 +36,11 @@ def _response_with_text(text: str) -> Mock:
 
 def setup_function():
     clear_portkey_cache()
-    clear_alias_cache()
 
 
-@patch("ai_cost_calculator.data.alias_builder.httpx.get")
 @patch("ai_cost_calculator.providers.portkey_client.httpx.get")
-def test_parse_portkey_json_api(mock_portkey_get, mock_alias_get):
+def test_parse_portkey_json_api(mock_portkey_get):
     mock_portkey_get.return_value = _response_with_text(_mock_portkey_json())
-    mock_alias_get.return_value = _response_with_text(_mock_portkey_json())
 
     models = get_portkey_pricing_map()
     assert "gpt-4o-mini" in models

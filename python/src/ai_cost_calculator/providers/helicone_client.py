@@ -5,23 +5,12 @@ import httpx
 
 from ai_cost_calculator.data.model_resolver import normalize_model_id, strip_provider_prefix
 from ai_cost_calculator.types import NormalizedPricingModel
+from ai_cost_calculator.utils import parse_number_clean
 
 HELICONE_URL = "https://www.helicone.ai/api/llm-costs"
 
 _cache: dict[str, NormalizedPricingModel] | None = None
 _pattern_entries: list[dict[str, Any]] | None = None
-
-
-def _parse_number(value: Any) -> float | None:
-    if isinstance(value, (int, float)):
-        return float(value)
-    if isinstance(value, str):
-        cleaned = value.replace("$", "").replace(",", "").strip()
-        try:
-            return float(cleaned)
-        except ValueError:
-            return None
-    return None
 
 
 def _model_matches(candidate: str, pattern: str, operator: str) -> bool:
@@ -55,8 +44,8 @@ def helicone_pattern_lookup(
         if not model or not operator:
             continue
         if _model_matches(normalized, normalize_model_id(model), operator):
-            input_cost = _parse_number(entry.get("input_cost_per_1m")) or 0.0
-            output_cost = _parse_number(entry.get("output_cost_per_1m")) or 0.0
+            input_cost = parse_number_clean(entry.get("input_cost_per_1m")) or 0.0
+            output_cost = parse_number_clean(entry.get("output_cost_per_1m")) or 0.0
             if input_cost <= 0 and output_cost <= 0:
                 continue
             return NormalizedPricingModel(
@@ -92,22 +81,22 @@ def get_helicone_pricing_map() -> dict[str, NormalizedPricingModel]:
     out: dict[str, NormalizedPricingModel] = {}
     for entry in exact_entries:
         model_raw = entry["model"]
-        input_cost = _parse_number(entry.get("input_cost_per_1m")) or 0.0
-        output_cost = _parse_number(entry.get("output_cost_per_1m")) or 0.0
+        input_cost = parse_number_clean(entry.get("input_cost_per_1m")) or 0.0
+        output_cost = parse_number_clean(entry.get("output_cost_per_1m")) or 0.0
         if input_cost <= 0 and output_cost <= 0:
             continue
 
         norm_id = normalize_model_id(model_raw)
         bare_id = strip_provider_prefix(norm_id)
-        entry = NormalizedPricingModel(
+        pricing = NormalizedPricingModel(
             model_id=bare_id,
             input_cost_per_1m=input_cost,
             output_cost_per_1m=output_cost,
             currency="USD",
         )
-        out[norm_id] = entry
+        out[norm_id] = pricing
         if bare_id != norm_id:
-            out[bare_id] = entry
+            out[bare_id] = pricing
 
     _pattern_entries = patterns
     _cache = out

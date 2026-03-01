@@ -5,6 +5,7 @@ import httpx
 
 from ai_cost_calculator.data.model_resolver import normalize_model_id, strip_provider_prefix
 from ai_cost_calculator.types import NormalizedPricingModel
+from ai_cost_calculator.utils import parse_number
 
 BERRI_URL = (
     "https://raw.githubusercontent.com/BerriAI/litellm/main/model_prices_and_context_window.json"
@@ -14,23 +15,12 @@ _cache: dict[str, NormalizedPricingModel] | None = None
 _provider_cache: dict[str, str] | None = None
 
 
-def _parse_number(value: Any) -> float | None:
-    if isinstance(value, (int, float)):
-        return float(value)
-    if isinstance(value, str):
-        try:
-            return float(value)
-        except ValueError:
-            return None
-    return None
-
-
 def _to_cost_per_1m(entry: dict[str, Any], token_key: str, per_1k_key: str) -> float:
-    token_cost = _parse_number(entry.get(token_key))
+    token_cost = parse_number(entry.get(token_key))
     if token_cost is not None:
         return token_cost * 1_000_000
 
-    per_1k = _parse_number(entry.get(per_1k_key))
+    per_1k = parse_number(entry.get(per_1k_key))
     if per_1k is not None:
         return per_1k * 1_000
 
@@ -38,7 +28,7 @@ def _to_cost_per_1m(entry: dict[str, Any], token_key: str, per_1k_key: str) -> f
 
 
 def _per_token_to_per_1m(entry: dict[str, Any], token_key: str) -> float | None:
-    token_cost = _parse_number(entry.get(token_key))
+    token_cost = parse_number(entry.get(token_key))
     if token_cost is not None and token_cost > 0:
         return token_cost * 1_000_000
     return None
@@ -68,6 +58,8 @@ def _fetch_berri_data() -> tuple[dict[str, NormalizedPricingModel], dict[str, st
     for model_id, entry in payload.items():
         if not isinstance(entry, dict):
             continue
+        if model_id == "sample_spec":
+            continue
 
         provider = _extract_provider(entry)
         if provider is not None:
@@ -86,6 +78,8 @@ def _fetch_berri_data() -> tuple[dict[str, NormalizedPricingModel], dict[str, st
 
         cache_read_cost = _per_token_to_per_1m(entry, "cache_read_input_token_cost")
         cache_creation_cost = _per_token_to_per_1m(entry, "cache_creation_input_token_cost")
+        raw_tool_tokens = parse_number(entry.get("tool_use_system_prompt_tokens"))
+        tool_use_system_prompt_tokens = int(raw_tool_tokens) if raw_tool_tokens is not None and raw_tool_tokens > 0 else None
 
         norm_key = normalize_model_id(model_id)
         bare_key = strip_provider_prefix(norm_key)
@@ -96,6 +90,7 @@ def _fetch_berri_data() -> tuple[dict[str, NormalizedPricingModel], dict[str, st
             currency="USD",
             cache_read_cost_per_1m=cache_read_cost,
             cache_creation_cost_per_1m=cache_creation_cost,
+            tool_use_system_prompt_tokens=tool_use_system_prompt_tokens,
         )
         out[norm_key] = normalized
         if bare_key != norm_key:

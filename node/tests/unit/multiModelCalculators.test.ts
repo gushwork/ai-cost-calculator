@@ -4,7 +4,6 @@ import { BerrilmBasedCalculator } from "../../src/calculator/BerrilmBasedCalcula
 import { BestEffortCalculator } from "../../src/calculator/BestEffortCalculator.js";
 import { OpenRouterBasedCalculator } from "../../src/calculator/OpenRouterBasedCalculator.js";
 import { PortkeyBasedCalculator } from "../../src/calculator/PortkeyBasedCalculator.js";
-import { clearAliasCache } from "../../src/data/aliasBuilder.js";
 import {
   ModelNotFoundError,
   ProviderInferenceError,
@@ -12,7 +11,6 @@ import {
 } from "../../src/errors.js";
 import { clearBerriCache } from "../../src/providers/berriClient.js";
 import { clearHeliconeCache } from "../../src/providers/heliconeClient.js";
-import { clearJinaCache } from "../../src/providers/jinaClient.js";
 import { clearOpenRouterCache } from "../../src/providers/openrouterClient.js";
 import { clearPortkeyCache } from "../../src/providers/portkeyClient.js";
 
@@ -21,18 +19,14 @@ describe("multi-model calculators", () => {
     clearBerriCache();
     clearOpenRouterCache();
     clearPortkeyCache();
-    clearJinaCache();
     clearHeliconeCache();
-    clearAliasCache();
   });
 
   afterEach(() => {
     clearBerriCache();
     clearOpenRouterCache();
     clearPortkeyCache();
-    clearJinaCache();
     clearHeliconeCache();
-    clearAliasCache();
     mock.restore();
   });
 

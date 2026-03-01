@@ -1,5 +1,6 @@
 import { normalizeModelId, stripProviderPrefix } from "../data/modelResolver.js";
 import type { NormalizedPricingModel } from "../types.js";
+import { parseNumericClean } from "../utils.js";
 
 const PORTKEY_PRICING_PAGE = "https://portkey.ai/docs/integrations/llms";
 const PORTKEY_PRICING_BASE = "https://configs.portkey.ai/pricing";
@@ -18,18 +19,8 @@ const PORTKEY_PROVIDERS = [
 
 let cachePromise: Promise<Map<string, NormalizedPricingModel>> | null = null;
 
-function parseNumeric(value: unknown): number | null {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  if (typeof value === "string") {
-    const clean = value.replace(/[$,]/g, "");
-    const parsed = Number(clean);
-    if (Number.isFinite(parsed)) return parsed;
-  }
-  return null;
-}
-
 function perTokenToPer1M(value: unknown): number | null {
-  const perToken = parseNumeric(value);
+  const perToken = parseNumericClean(value);
   if (perToken === null) return null;
   return perToken * 1_000_000;
 }
@@ -99,12 +90,12 @@ function parseNextDataModels(
     if (!id || !model.pricing) continue;
 
     const inputCostPer1M =
-      parseNumeric(model.pricing.inputCostPer1M) ??
-      parseNumeric(model.pricing.input) ??
+      parseNumericClean(model.pricing.inputCostPer1M) ??
+      parseNumericClean(model.pricing.input) ??
       0;
     const outputCostPer1M =
-      parseNumeric(model.pricing.outputCostPer1M) ??
-      parseNumeric(model.pricing.output) ??
+      parseNumericClean(model.pricing.outputCostPer1M) ??
+      parseNumericClean(model.pricing.output) ??
       0;
     if (inputCostPer1M <= 0 && outputCostPer1M <= 0) continue;
 

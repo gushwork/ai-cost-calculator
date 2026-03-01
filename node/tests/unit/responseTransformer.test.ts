@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it, mock, spyOn } from "bun:test";
 
 import {
+  detectToolCalls,
   extractResponseMetadata,
   extractTokenUsage,
 } from "../../src/data/responseTransformer.js";
@@ -166,5 +167,107 @@ describe("responseTransformer", () => {
     );
 
     expect(metadata).toEqual({ model: "gpt-4o", provider: "openai" });
+  });
+
+  describe("detectToolCalls", () => {
+    it("detects OpenAI tool_calls in choices", () => {
+      expect(
+        detectToolCalls({
+          choices: [
+            {
+              message: {
+                role: "assistant",
+                tool_calls: [{ id: "call_1", type: "function", function: { name: "get_weather" } }],
+              },
+            },
+          ],
+        }),
+      ).toBe(true);
+    });
+
+    it("returns false for choices without tool_calls", () => {
+      expect(
+        detectToolCalls({
+          choices: [{ message: { role: "assistant", content: "Hello" } }],
+        }),
+      ).toBe(false);
+    });
+
+    it("returns false for empty tool_calls array", () => {
+      expect(
+        detectToolCalls({
+          choices: [{ message: { role: "assistant", tool_calls: [] } }],
+        }),
+      ).toBe(false);
+    });
+
+    it("detects Anthropic tool_use content blocks", () => {
+      expect(
+        detectToolCalls({
+          content: [
+            { type: "text", text: "Let me check the weather." },
+            { type: "tool_use", id: "tu_1", name: "get_weather", input: {} },
+          ],
+        }),
+      ).toBe(true);
+    });
+
+    it("returns false for Anthropic text-only content", () => {
+      expect(
+        detectToolCalls({
+          content: [{ type: "text", text: "Hello" }],
+        }),
+      ).toBe(false);
+    });
+
+    it("detects OpenAI Responses API function_call output", () => {
+      expect(
+        detectToolCalls({
+          output: [
+            { type: "function_call", name: "get_weather", arguments: "{}" },
+          ],
+        }),
+      ).toBe(true);
+    });
+
+    it("returns false for null/undefined/non-object", () => {
+      expect(detectToolCalls(null)).toBe(false);
+      expect(detectToolCalls(undefined)).toBe(false);
+      expect(detectToolCalls("string")).toBe(false);
+    });
+
+    it("returns false for empty response object", () => {
+      expect(detectToolCalls({})).toBe(false);
+    });
+
+    it("detects Google Gemini functionCall in candidates", () => {
+      expect(
+        detectToolCalls({
+          candidates: [
+            {
+              content: {
+                parts: [
+                  { functionCall: { name: "get_weather", args: { city: "London" } } },
+                ],
+              },
+            },
+          ],
+        }),
+      ).toBe(true);
+    });
+
+    it("returns false for Gemini candidates without functionCall", () => {
+      expect(
+        detectToolCalls({
+          candidates: [
+            {
+              content: {
+                parts: [{ text: "Hello" }],
+              },
+            },
+          ],
+        }),
+      ).toBe(false);
+    });
   });
 });

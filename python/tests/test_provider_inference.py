@@ -3,7 +3,6 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from ai_cost_calculator.data.alias_builder import clear_alias_cache
 from ai_cost_calculator.data.response_transformer import (
     extract_response_metadata,
     infer_provider_from_model,
@@ -38,15 +37,12 @@ def _berri_provider_payload() -> str:
 
 def setup_function():
     clear_berri_cache()
-    clear_alias_cache()
 
 
-@patch("ai_cost_calculator.data.alias_builder.httpx.get")
 @patch("ai_cost_calculator.providers.berri_client.httpx.get")
-def test_infer_provider_for_canonical_and_alias_models(mock_berri_get, mock_alias_get):
+def test_infer_provider_for_canonical_and_alias_models(mock_berri_get):
     payload = _berri_provider_payload()
     mock_berri_get.return_value = _response_with_text(payload)
-    mock_alias_get.return_value = _response_with_text(payload)
 
     cases = [
         ("openai/gpt-4o-mini", "openai"),
@@ -62,12 +58,10 @@ def test_infer_provider_for_canonical_and_alias_models(mock_berri_get, mock_alia
         assert infer_provider_from_model(model) == provider
 
 
-@patch("ai_cost_calculator.data.alias_builder.httpx.get")
 @patch("ai_cost_calculator.providers.berri_client.httpx.get")
-def test_extract_response_metadata_for_alias_model(mock_berri_get, mock_alias_get):
+def test_extract_response_metadata_for_alias_model(mock_berri_get):
     payload = _berri_provider_payload()
     mock_berri_get.return_value = _response_with_text(payload)
-    mock_alias_get.return_value = _response_with_text(payload)
 
     metadata = extract_response_metadata(
         {
@@ -81,12 +75,10 @@ def test_extract_response_metadata_for_alias_model(mock_berri_get, mock_alias_ge
     }
 
 
-@patch("ai_cost_calculator.data.alias_builder.httpx.get")
 @patch("ai_cost_calculator.providers.berri_client.httpx.get")
-def test_infer_provider_raises_for_unknown_model(mock_berri_get, mock_alias_get):
+def test_infer_provider_raises_for_unknown_model(mock_berri_get):
     payload = _berri_provider_payload()
     mock_berri_get.return_value = _response_with_text(payload)
-    mock_alias_get.return_value = _response_with_text(payload)
 
     with pytest.raises(ProviderInferenceError):
         infer_provider_from_model("custom/no-map-model")

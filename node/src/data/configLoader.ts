@@ -2,10 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import type {
-  ProviderPricingMappingsConfig,
-  ResponseMappingsConfig,
-} from "../types.js";
+import type { ResponseMappingsConfig } from "../types.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const BUNDLED_DIR = __dirname;
@@ -29,12 +26,10 @@ function readJsonFile<T>(fileName: string): T {
   return JSON.parse(raw) as T;
 }
 
+let _responseMappingsCache: ResponseMappingsConfig | null = null;
 export function loadResponseMappingsConfig(): ResponseMappingsConfig {
-  return readJsonFile<ResponseMappingsConfig>("response-mappings.json");
-}
-
-export function loadProviderPricingMappingsConfig(): ProviderPricingMappingsConfig {
-  return readJsonFile<ProviderPricingMappingsConfig>(
-    "provider-pricing-mappings.json",
-  );
+  if (!_responseMappingsCache) {
+    _responseMappingsCache = readJsonFile<ResponseMappingsConfig>("response-mappings.json");
+  }
+  return _responseMappingsCache;
 }

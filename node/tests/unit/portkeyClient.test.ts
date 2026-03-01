@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it, mock, spyOn } from "bun:test";
 
 import { getPortkeyPricingMap, clearPortkeyCache } from "../../src/providers/portkeyClient.js";
-import { clearAliasCache } from "../../src/data/aliasBuilder.js";
 
 function buildMockPortkeyJson(): Record<string, unknown> {
   return {
@@ -27,7 +26,6 @@ function buildMockPortkeyJson(): Record<string, unknown> {
 describe("portkeyClient JSON API", () => {
   afterEach(() => {
     clearPortkeyCache();
-    clearAliasCache();
     mock.restore();
   });
 

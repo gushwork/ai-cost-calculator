@@ -4,7 +4,6 @@ import { fileURLToPath } from "node:url";
 
 import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test";
 
-import { clearAliasCache } from "../../src/data/aliasBuilder.js";
 import {
   extractResponseMetadata,
   inferProviderFromModel,
@@ -91,12 +90,10 @@ function buildBerriProviderPayload(): Record<string, Record<string, unknown>> {
 describe("provider inference coverage", () => {
   beforeEach(() => {
     clearBerriCache();
-    clearAliasCache();
   });
 
   afterEach(() => {
     clearBerriCache();
-    clearAliasCache();
     mock.restore();
   });
 

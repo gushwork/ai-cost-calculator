@@ -1,5 +1,6 @@
 import { normalizeModelId, stripProviderPrefix } from "../data/modelResolver.js";
 import type { NormalizedPricingModel } from "../types.js";
+import { parseNumericClean } from "../utils.js";
 
 const HELICONE_URL = "https://www.helicone.ai/api/llm-costs";
 
@@ -12,16 +13,7 @@ type HeliconeEntry = {
 };
 
 let cachePromise: Promise<Map<string, NormalizedPricingModel>> | null = null;
-
-function parseNumeric(value: unknown): number | null {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  if (typeof value === "string") {
-    const cleaned = value.replace(/[$,\s]/g, "");
-    const parsed = Number(cleaned);
-    if (Number.isFinite(parsed)) return parsed;
-  }
-  return null;
-}
+let cachedPatterns: HeliconeEntry[] | null = null;
 
 function modelMatches(
   candidate: string,
@@ -67,8 +59,8 @@ async function fetchHeliconePricing(): Promise<
 
   for (const entry of exactEntries) {
     const modelRaw = entry.model!;
-    const inputCostPer1M = parseNumeric(entry.input_cost_per_1m) ?? 0;
-    const outputCostPer1M = parseNumeric(entry.output_cost_per_1m) ?? 0;
+    const inputCostPer1M = parseNumericClean(entry.input_cost_per_1m) ?? 0;
+    const outputCostPer1M = parseNumericClean(entry.output_cost_per_1m) ?? 0;
     if (inputCostPer1M <= 0 && outputCostPer1M <= 0) continue;
 
     const normalizedId = normalizeModelId(modelRaw);
@@ -84,29 +76,24 @@ async function fetchHeliconePricing(): Promise<
     if (bare !== normalizedId) out.set(bare, pricingEntry);
   }
 
-  // Store pattern entries for prefix/includes matching during lookup
-  (out as HeliconeMap)._patterns = patternEntries;
+  cachedPatterns = patternEntries;
 
   return out;
 }
-
-type HeliconeMap = Map<string, NormalizedPricingModel> & {
-  _patterns?: HeliconeEntry[];
-};
 
 export function heliconePatternLookup(
   map: Map<string, NormalizedPricingModel>,
   modelId: string,
 ): NormalizedPricingModel | undefined {
-  const patterns = (map as HeliconeMap)._patterns;
+  const patterns = cachedPatterns;
   if (!patterns) return undefined;
 
   const normalized = normalizeModelId(modelId);
   for (const entry of patterns) {
     if (!entry.model || !entry.operator) continue;
     if (modelMatches(normalized, normalizeModelId(entry.model), entry.operator)) {
-      const inputCostPer1M = parseNumeric(entry.input_cost_per_1m) ?? 0;
-      const outputCostPer1M = parseNumeric(entry.output_cost_per_1m) ?? 0;
+      const inputCostPer1M = parseNumericClean(entry.input_cost_per_1m) ?? 0;
+      const outputCostPer1M = parseNumericClean(entry.output_cost_per_1m) ?? 0;
       if (inputCostPer1M <= 0 && outputCostPer1M <= 0) continue;
       return {
         modelId: normalized,
@@ -130,4 +117,5 @@ export async function getHeliconePricingMap(): Promise<
 
 export function clearHeliconeCache(): void {
   cachePromise = null;
+  cachedPatterns = null;
 }

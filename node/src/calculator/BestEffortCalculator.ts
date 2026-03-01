@@ -3,7 +3,6 @@ import type { CostOptions, CostResult } from "../types.js";
 import { BerrilmBasedCalculator } from "./BerrilmBasedCalculator.js";
 import { Calculator } from "./Calculator.js";
 import { HeliconeBasedCalculator } from "./HeliconeBasedCalculator.js";
-import { JinaBasedCalculator } from "./JinaBasedCalculator.js";
 import { OpenRouterBasedCalculator } from "./OpenRouterBasedCalculator.js";
 import { PortkeyBasedCalculator } from "./PortkeyBasedCalculator.js";
 
@@ -11,7 +10,6 @@ type StaticCalculator =
   | typeof OpenRouterBasedCalculator
   | typeof BerrilmBasedCalculator
   | typeof PortkeyBasedCalculator
-  | typeof JinaBasedCalculator
   | typeof HeliconeBasedCalculator;
 
 export class BestEffortCalculator extends Calculator {
@@ -19,7 +17,6 @@ export class BestEffortCalculator extends Calculator {
     OpenRouterBasedCalculator,
     BerrilmBasedCalculator,
     PortkeyBasedCalculator,
-    JinaBasedCalculator,
     HeliconeBasedCalculator,
   ];
 
@@ -30,7 +27,7 @@ export class BestEffortCalculator extends Calculator {
       try {
         return await calculator.getCost(response, options);
       } catch (error) {
-        failures.push(error as Error);
+        failures.push(error instanceof Error ? error : new Error(String(error)));
       }
     }
 

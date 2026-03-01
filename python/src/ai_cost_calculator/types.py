@@ -2,9 +2,12 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional, TypedDict
 
 
-class CostResult(TypedDict):
+class _CostResultRequired(TypedDict):
     currency: str
     cost: float
+
+class CostResult(_CostResultRequired, total=False):
+    tool_call_cost: float
 
 
 class ResponseMetadata(TypedDict):
@@ -29,12 +32,15 @@ class NormalizedPricingModel:
     currency: str = "USD"
     cache_read_cost_per_1m: Optional[float] = None
     cache_creation_cost_per_1m: Optional[float] = None
+    tool_use_system_prompt_tokens: Optional[int] = None
 
 
-class ResponseProviderMapping(TypedDict, total=False):
+class _ResponseProviderMappingRequired(TypedDict):
     inputTokensPaths: List[str]
     outputTokensPaths: List[str]
     totalTokensPaths: List[str]
+
+class ResponseProviderMapping(_ResponseProviderMappingRequired, total=False):
     cacheReadTokensPaths: List[str]
     cacheCreationTokensPaths: List[str]
     inputIncludesCacheRead: bool

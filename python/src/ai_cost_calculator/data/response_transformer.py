@@ -1,3 +1,4 @@
+import math
 from typing import Any
 
 from jsonpath_ng import parse
@@ -15,7 +16,7 @@ def _get_first_numeric_value(response: Any, paths: list[str]) -> float | None:
         if not matches:
             continue
         first = matches[0].value
-        if isinstance(first, (int, float)):
+        if isinstance(first, (int, float)) and math.isfinite(first):
             return float(first)
         if isinstance(first, str):
             try:
@@ -65,6 +66,51 @@ def extract_token_usage(response: Any, provider: str) -> TokenUsage:
         cache_read_tokens=cache_read or 0.0,
         cache_creation_tokens=cache_creation or 0.0,
     )
+
+
+def detect_tool_calls(response: Any) -> bool:
+    if not isinstance(response, dict):
+        return False
+
+    # OpenAI chat completions: choices[].message.tool_calls
+    choices = response.get("choices")
+    if isinstance(choices, list):
+        for choice in choices:
+            message = choice.get("message") if isinstance(choice, dict) else None
+            if isinstance(message, dict):
+                tool_calls = message.get("tool_calls")
+                if isinstance(tool_calls, list) and len(tool_calls) > 0:
+                    return True
+
+    # Anthropic: content[].type === "tool_use"
+    content = response.get("content")
+    if isinstance(content, list):
+        for block in content:
+            if isinstance(block, dict) and block.get("type") == "tool_use":
+                return True
+
+    # OpenAI Responses API: output[].type === "function_call"
+    output = response.get("output")
+    if isinstance(output, list):
+        for item in output:
+            if isinstance(item, dict) and item.get("type") == "function_call":
+                return True
+
+    # Google Gemini: candidates[].content.parts[].functionCall
+    candidates = response.get("candidates")
+    if isinstance(candidates, list):
+        for candidate in candidates:
+            if not isinstance(candidate, dict):
+                continue
+            content = candidate.get("content")
+            if isinstance(content, dict):
+                parts = content.get("parts")
+                if isinstance(parts, list):
+                    for part in parts:
+                        if isinstance(part, dict) and part.get("functionCall"):
+                            return True
+
+    return False
 
 
 def get_input_includes_cache_read(provider: str) -> bool:

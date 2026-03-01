@@ -12,7 +12,6 @@ import { BerrilmBasedCalculator } from "../../src/calculator/BerrilmBasedCalcula
 import { OpenRouterBasedCalculator } from "../../src/calculator/OpenRouterBasedCalculator.js";
 import { clearBerriCache } from "../../src/providers/berriClient.js";
 import { clearOpenRouterCache } from "../../src/providers/openrouterClient.js";
-import { clearAliasCache } from "../../src/data/aliasBuilder.js";
 import type { NormalizedPricingModel, TokenUsage } from "../../src/types.js";
 
 process.env.LLMCOST_CONFIGS_DIR = path.resolve(
@@ -230,7 +229,6 @@ describe("calculator with cache pricing from Berri", () => {
   afterEach(() => {
     clearBerriCache();
     clearOpenRouterCache();
-    clearAliasCache();
     mock.restore();
   });
 
@@ -299,7 +297,6 @@ describe("calculator with cache pricing from OpenRouter", () => {
   afterEach(() => {
     clearBerriCache();
     clearOpenRouterCache();
-    clearAliasCache();
     mock.restore();
   });
 

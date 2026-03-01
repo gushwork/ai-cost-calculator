@@ -1,3 +1,4 @@
+import math
 import os
 from pathlib import Path
 
@@ -171,3 +172,58 @@ def _call_openai_completions() -> dict[str, str | dict]:
     return {
         "response": response.json(),
     }
+
+
+_MULTI_PROVIDER_MODELS = [
+    ("openai", "openai/gpt-4o-mini", None),
+    ("anthropic", "anthropic/claude-3.5-haiku", None),
+    ("google", "google/gemini-2.0-flash-001", None),
+    ("meta", "meta-llama/llama-3.1-8b-instruct", None),
+    ("mistral", "mistralai/mistral-small-24b-instruct-2501", None),
+    ("cohere", "cohere/command-r-08-2024", None),
+    ("xai", "x-ai/grok-3-mini", None),
+    ("deepseek", "deepseek/deepseek-chat-v3-0324", None),
+    ("qwen", "qwen/qwen-2.5-7b-instruct", "openrouter"),
+]
+
+_can_run_multi_provider = (
+    os.getenv("LLMCOST_E2E_LIVE", "false").lower() == "true"
+    and bool(os.getenv("OPENROUTER_API_KEY"))
+)
+
+
+def _call_openrouter_model(model: str) -> dict:
+    api_key = os.environ["OPENROUTER_API_KEY"]
+    response = httpx.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "model": model,
+            "messages": [{"role": "user", "content": "Reply with: ok"}],
+            "max_tokens": 5,
+            "temperature": 0,
+        },
+        timeout=60.0,
+    )
+    response.raise_for_status()
+    return response.json()
+
+
+@pytest.mark.skipif(not _can_run_multi_provider, reason="Requires LLMCOST_E2E_LIVE=true and OPENROUTER_API_KEY")
+@pytest.mark.parametrize(
+    "provider,model,provider_override",
+    _MULTI_PROVIDER_MODELS,
+    ids=[p for p, _, _ in _MULTI_PROVIDER_MODELS],
+)
+def test_live_multi_provider(provider: str, model: str, provider_override: str | None):
+    response = _call_openrouter_model(model)
+    kwargs = {"provider": provider_override} if provider_override else {}
+    result = BestEffortCalculator.get_cost(response, **kwargs)
+
+    assert result["currency"] == "USD"
+    assert isinstance(result["cost"], (int, float))
+    assert math.isfinite(result["cost"])
+    assert result["cost"] >= 0

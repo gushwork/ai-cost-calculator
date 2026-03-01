@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test";
 
-import { clearAliasCache } from "../../src/data/aliasBuilder.js";
 import {
   clearBerriCache,
   getBerriModelProviderMap,
@@ -10,12 +9,10 @@ import {
 describe("berriClient caching", () => {
   beforeEach(() => {
     clearBerriCache();
-    clearAliasCache();
   });
 
   afterEach(() => {
     clearBerriCache();
-    clearAliasCache();
     mock.restore();
   });
 

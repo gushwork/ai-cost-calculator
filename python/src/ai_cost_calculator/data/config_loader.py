@@ -23,5 +23,10 @@ def _read_json(file_name: str) -> Any:
     return json.loads((_resolve_configs_dir() / file_name).read_text(encoding="utf-8"))
 
 
+_response_mappings_cache: ResponseMappingsConfig | None = None
+
 def load_response_mappings_config() -> ResponseMappingsConfig:
-    return _read_json("response-mappings.json")
+    global _response_mappings_cache
+    if _response_mappings_cache is None:
+        _response_mappings_cache = _read_json("response-mappings.json")
+    return _response_mappings_cache

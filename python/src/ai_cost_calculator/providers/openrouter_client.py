@@ -6,25 +6,14 @@ import httpx
 
 from ai_cost_calculator.data.model_resolver import normalize_model_id, strip_provider_prefix
 from ai_cost_calculator.types import NormalizedPricingModel
+from ai_cost_calculator.utils import parse_number_clean
 
 OPENROUTER_MODELS_URL = "https://openrouter.ai/api/v1/models"
 _cache: dict[str, NormalizedPricingModel] | None = None
 
 
-def _parse_number(value: Any) -> float | None:
-    if isinstance(value, (int, float)):
-        return float(value)
-    if isinstance(value, str):
-        cleaned = value.replace("$", "").replace(",", "").strip()
-        try:
-            return float(cleaned)
-        except ValueError:
-            return None
-    return None
-
-
 def _parse_per_token_to_per_1m(value: Any) -> float | None:
-    per_token = _parse_number(value)
+    per_token = parse_number_clean(value)
     if per_token is None:
         return None
     return per_token * 1_000_000

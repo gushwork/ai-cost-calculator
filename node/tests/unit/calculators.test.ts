@@ -4,10 +4,8 @@ import { BestEffortCalculator } from "../../src/calculator/BestEffortCalculator.
 import { BerrilmBasedCalculator } from "../../src/calculator/BerrilmBasedCalculator.js";
 import { OpenRouterBasedCalculator } from "../../src/calculator/OpenRouterBasedCalculator.js";
 import { PortkeyBasedCalculator } from "../../src/calculator/PortkeyBasedCalculator.js";
-import { clearAliasCache } from "../../src/data/aliasBuilder.js";
 import { clearBerriCache } from "../../src/providers/berriClient.js";
 import { clearHeliconeCache } from "../../src/providers/heliconeClient.js";
-import { clearJinaCache } from "../../src/providers/jinaClient.js";
 import { clearOpenRouterCache } from "../../src/providers/openrouterClient.js";
 import { clearPortkeyCache } from "../../src/providers/portkeyClient.js";
 
@@ -25,18 +23,14 @@ describe("calculators", () => {
     clearBerriCache();
     clearOpenRouterCache();
     clearPortkeyCache();
-    clearJinaCache();
     clearHeliconeCache();
-    clearAliasCache();
   });
 
   afterEach(() => {
     clearBerriCache();
     clearOpenRouterCache();
     clearPortkeyCache();
-    clearJinaCache();
     clearHeliconeCache();
-    clearAliasCache();
     mock.restore();
   });
 
@@ -212,6 +206,59 @@ describe("calculators", () => {
       currency: "USD",
       cost: 0.00045,
     });
+  });
+
+  it("includes toolCallCost when response has tool calls", async () => {
+    spyOn(globalThis, "fetch").mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          "claude-sonnet-4-20250514": {
+            input_cost_per_token: 0.000003,
+            output_cost_per_token: 0.000015,
+            litellm_provider: "anthropic",
+            tool_use_system_prompt_tokens: 159,
+          },
+        }),
+        { status: 200 },
+      ),
+    );
+
+    const result = await BerrilmBasedCalculator.getCost({
+      model: "claude-sonnet-4-20250514",
+      usage: { input_tokens: 1000, output_tokens: 500, total_tokens: 1500 },
+      content: [
+        { type: "text", text: "Here is the weather." },
+        { type: "tool_use", id: "tu_1", name: "get_weather", input: {} },
+      ],
+    });
+
+    expect(result.currency).toBe("USD");
+    expect(result.cost).toBeGreaterThan(0);
+    expect(result.toolCallCost).toBeDefined();
+    expect(result.toolCallCost).toBeCloseTo(159 * 0.000003, 10);
+  });
+
+  it("omits toolCallCost when no tool calls in response", async () => {
+    spyOn(globalThis, "fetch").mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          "claude-sonnet-4-20250514": {
+            input_cost_per_token: 0.000003,
+            output_cost_per_token: 0.000015,
+            litellm_provider: "anthropic",
+            tool_use_system_prompt_tokens: 159,
+          },
+        }),
+        { status: 200 },
+      ),
+    );
+
+    const result = await BerrilmBasedCalculator.getCost({
+      model: "claude-sonnet-4-20250514",
+      usage: { input_tokens: 1000, output_tokens: 500, total_tokens: 1500 },
+    });
+
+    expect(result.toolCallCost).toBeUndefined();
   });
 
   it("calculates cost from portkey data directly", async () => {

@@ -1,21 +1,12 @@
 import { normalizeModelId, stripProviderPrefix } from "../data/modelResolver.js";
 import type { NormalizedPricingModel } from "../types.js";
+import { parseNumericClean } from "../utils.js";
 
 const OPENROUTER_MODELS_URL = "https://openrouter.ai/api/v1/models";
 let cachePromise: Promise<Map<string, NormalizedPricingModel>> | null = null;
 
-function parseNumeric(value: unknown): number | null {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  if (typeof value === "string") {
-    const cleaned = value.replace(/[$,\s]/g, "");
-    const parsed = Number(cleaned);
-    if (Number.isFinite(parsed)) return parsed;
-  }
-  return null;
-}
-
 function parsePerTokenToPer1M(value: unknown): number | null {
-  const perToken = parseNumeric(value);
+  const perToken = parseNumericClean(value);
   if (perToken === null) return null;
   return perToken * 1_000_000;
 }

@@ -5,7 +5,6 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "bun:test";
 
 import { BestEffortCalculator } from "../../src/calculator/BestEffortCalculator.js";
-import { getJinaPricingMap } from "../../src/providers/jinaClient.js";
 
 function loadDotEnv(dotEnvPath: string): Record<string, string> {
   if (!existsSync(dotEnvPath)) return {};
@@ -177,33 +176,6 @@ async function callOpenAICompletions(): Promise<LiveInvocation> {
 
 describe("node e2e live", () => {
   it.skipIf(!liveEnabled)(
-    "loads Jina model pricing from Portkey API",
-    async () => {
-      // #region agent log
-      fetch('http://127.0.0.1:7351/ingest/70f6bd8d-2515-4fe7-83a1-cda2e3d5fa3c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'2d553b'},body:JSON.stringify({sessionId:'2d553b',runId:'baseline',hypothesisId:'H1',location:'node/tests/e2e/live.test.ts:182',message:'before getJinaPricingMap call',data:{liveEnabled,importType:typeof getJinaPricingMap,isMockLike:Object.prototype.hasOwnProperty.call(getJinaPricingMap as object,'mock')},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
-      const pricingMap = await getJinaPricingMap();
-      // #region agent log
-      fetch('http://127.0.0.1:7351/ingest/70f6bd8d-2515-4fe7-83a1-cda2e3d5fa3c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'2d553b'},body:JSON.stringify({sessionId:'2d553b',runId:'baseline',hypothesisId:'H5',location:'node/tests/e2e/live.test.ts:184',message:'after getJinaPricingMap call',data:{isMap:pricingMap instanceof Map,constructorName:(pricingMap as { constructor?: { name?: string } } | undefined)?.constructor?.name,keyCount:pricingMap instanceof Map?pricingMap.size:null},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
-      const models = [
-        "jina-reranker-v3",
-        "jina-embeddings-v2-base-en",
-        "jina-reranker-v2-base-multilingual",
-        "jina-reranker-v1-base-en",
-        "jina-colbert-v2",
-      ];
-
-      for (const model of models) {
-        const pricing = pricingMap.get(model);
-        expect(pricing, `pricing for ${model}`).toBeDefined();
-        expect(pricing?.inputCostPer1M, `inputCostPer1M for ${model}`).toBeGreaterThan(0);
-        expect(pricing?.outputCostPer1M, `outputCostPer1M for ${model}`).toBe(0);
-      }
-    },
-  );
-
-  it.skipIf(!liveEnabled)(
     "calculates cost using OpenRouter when available, else native API",
     async () => {
       const invocation = await getLiveInvocation();
@@ -249,4 +221,61 @@ describe("node e2e live", () => {
       expect(result.cost).toBeGreaterThan(0);
     },
   );
+});
+
+const multiProviderModels: Array<{ provider: string; model: string; providerOverride?: string }> = [
+  { provider: "openai", model: "openai/gpt-4o-mini" },
+  { provider: "anthropic", model: "anthropic/claude-3.5-haiku" },
+  { provider: "google", model: "google/gemini-2.0-flash-001" },
+  { provider: "meta", model: "meta-llama/llama-3.1-8b-instruct" },
+  { provider: "mistral", model: "mistralai/mistral-small-24b-instruct-2501" },
+  { provider: "cohere", model: "cohere/command-r-08-2024" },
+  { provider: "xai", model: "x-ai/grok-3-mini" },
+  { provider: "deepseek", model: "deepseek/deepseek-chat-v3-0324" },
+  { provider: "qwen", model: "qwen/qwen-2.5-7b-instruct", providerOverride: "openrouter" },
+];
+
+const canRunMultiProvider = liveEnabled && !!process.env.OPENROUTER_API_KEY;
+
+async function callOpenRouterModel(model: string): Promise<unknown> {
+  const apiKey = process.env.OPENROUTER_API_KEY!;
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model,
+      messages: [{ role: "user", content: "Reply with: ok" }],
+      max_tokens: 5,
+      temperature: 0,
+    }),
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`OpenRouter ${model} failed (${response.status}): ${body}`);
+  }
+
+  return (await response.json()) as unknown;
+}
+
+describe("multi-provider live via OpenRouter", () => {
+  for (const { provider, model, providerOverride } of multiProviderModels) {
+    it.skipIf(!canRunMultiProvider)(
+      `[${provider}] calculates cost for ${model}`,
+      async () => {
+        const response = await callOpenRouterModel(model);
+        const options = providerOverride ? { provider: providerOverride } : undefined;
+        const result = await BestEffortCalculator.getCost(response, options);
+
+        expect(result.currency).toBe("USD");
+        expect(typeof result.cost).toBe("number");
+        expect(Number.isFinite(result.cost)).toBe(true);
+        expect(result.cost).toBeGreaterThanOrEqual(0);
+      },
+      { timeout: 60_000 },
+    );
+  }
 });

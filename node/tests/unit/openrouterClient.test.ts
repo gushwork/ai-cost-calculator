@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test";
 
-import { clearAliasCache } from "../../src/data/aliasBuilder.js";
 import {
   clearOpenRouterCache,
   getOpenRouterPricingMap,
@@ -9,12 +8,10 @@ import {
 describe("openrouterClient caching", () => {
   beforeEach(() => {
     clearOpenRouterCache();
-    clearAliasCache();
   });
 
   afterEach(() => {
     clearOpenRouterCache();
-    clearAliasCache();
     mock.restore();
   });
 
