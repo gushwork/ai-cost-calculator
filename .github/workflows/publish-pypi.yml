@@ -27,7 +27,6 @@ jobs:
       - run: uv build
 
       - name: Publish to PyPI
-        working-directory: ./sdk/python
         env:
           UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
         run: |
