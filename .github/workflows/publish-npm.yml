@@ -61,8 +61,8 @@ jobs:
       - name: Install published package and run smoke test
         run: |
           mkdir /tmp/smoke-test && cd /tmp/smoke-test
-          bun init -y
+          npm init -y
           node -e "const p=require('./package.json'); p.type='module'; require('fs').writeFileSync('package.json', JSON.stringify(p, null, 2))"
-          bun install ai-cost-calculator@latest
+          npm install ai-cost-calculator@latest
           cp $GITHUB_WORKSPACE/node/tests/post-publish/smoke.mjs .
-          bun smoke.mjs
+          node smoke.mjs
