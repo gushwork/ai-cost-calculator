@@ -359,3 +359,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Bundled config files (copied from configs/ during build)
+python/src/ai_cost_calculator/data/*.json
+node/src/data/*.json

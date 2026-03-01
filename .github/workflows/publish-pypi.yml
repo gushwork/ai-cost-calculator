@@ -26,6 +26,9 @@ jobs:
 
       - run: uv run pytest tests/ --ignore=tests/test_e2e_live.py -v
 
+      - name: Bundle shared configs into package
+        run: cp ../configs/*.json src/ai_cost_calculator/data/
+
       - run: uv build
 
       - name: Publish to PyPI

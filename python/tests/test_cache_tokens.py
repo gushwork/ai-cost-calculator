@@ -15,7 +15,7 @@ from ai_cost_calculator.providers.berri_client import clear_berri_cache
 from ai_cost_calculator.providers.openrouter_client import clear_openrouter_cache
 from ai_cost_calculator.types import NormalizedPricingModel, TokenUsage
 
-os.environ["LLMCOST_CONFIGS_DIR"] = str(Path(__file__).resolve().parents[1] / "configs")
+os.environ["LLMCOST_CONFIGS_DIR"] = str(Path(__file__).resolve().parents[2] / "configs")
 
 
 def teardown_function():

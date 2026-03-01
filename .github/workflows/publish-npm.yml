@@ -34,6 +34,9 @@ jobs:
 
       - run: npm run build
 
+      - name: Bundle shared configs into package
+        run: cp ../configs/*.json dist/src/data/
+
       - run: npm publish --provenance --access public
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_API_TOKEN }}

@@ -116,7 +116,9 @@ Both SDKs read from the `configs/` directory:
 | `response-mappings.json` | JSONPath expressions for extracting token usage per provider |
 | `provider-pricing-mappings.json` | JSONPath expressions for normalizing pricing payloads |
 
-Config resolution order: `LLMCOST_CONFIGS_DIR` env var → `../configs` → `./configs` → relative to module.
+Config resolution order: `LLMCOST_CONFIGS_DIR` env var → bundled package data → repo-root `configs/`.
+
+Configs are automatically bundled into the published packages during CI. The shared source of truth is the `configs/` directory at the repo root.
 
 ## Error Handling
 

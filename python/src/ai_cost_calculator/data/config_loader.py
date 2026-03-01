@@ -5,20 +5,18 @@ from typing import Any
 
 from ai_cost_calculator.types import ResponseMappingsConfig
 
+_BUNDLED_DIR = Path(__file__).resolve().parent
+_REPO_CONFIGS_DIR = Path(__file__).resolve().parents[4] / "configs"
+
 
 def _resolve_configs_dir() -> Path:
     if os.getenv("LLMCOST_CONFIGS_DIR"):
         return Path(os.environ["LLMCOST_CONFIGS_DIR"])
-
-    candidates = [
-        Path.cwd().parent / "configs",
-        Path.cwd() / "configs",
-        Path(__file__).resolve().parents[4] / "configs",
-    ]
-    for candidate in candidates:
-        if candidate.exists():
-            return candidate
-    return candidates[0]
+    if (_BUNDLED_DIR / "response-mappings.json").exists():
+        return _BUNDLED_DIR
+    if _REPO_CONFIGS_DIR.exists():
+        return _REPO_CONFIGS_DIR
+    return _BUNDLED_DIR
 
 
 def _read_json(file_name: str) -> Any:

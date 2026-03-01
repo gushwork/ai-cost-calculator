@@ -7,25 +7,21 @@ import type {
   ResponseMappingsConfig,
 } from "../types.js";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const BUNDLED_DIR = __dirname;
+const REPO_CONFIGS_DIR = path.resolve(__dirname, "../../../configs");
+
 function resolveConfigsDir(): string {
   if (process.env.LLMCOST_CONFIGS_DIR) {
     return process.env.LLMCOST_CONFIGS_DIR;
   }
-
-  const fromCwdRepo = path.resolve(process.cwd(), "../configs");
-  const fromCwdLocal = path.resolve(process.cwd(), "configs");
-  const fromModule = path.resolve(
-    path.dirname(fileURLToPath(import.meta.url)),
-    "../../../../configs",
-  );
-
-  const candidates = [fromCwdRepo, fromCwdLocal, fromModule];
-  const existing = candidates.find((candidate) => existsSync(candidate));
-  if (existing) {
-    return existing;
+  if (existsSync(path.join(BUNDLED_DIR, "response-mappings.json"))) {
+    return BUNDLED_DIR;
   }
-
-  return fromCwdRepo;
+  if (existsSync(REPO_CONFIGS_DIR)) {
+    return REPO_CONFIGS_DIR;
+  }
+  return BUNDLED_DIR;
 }
 
 function readJsonFile<T>(fileName: string): T {
