@@ -1,5 +1,6 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test";
 
+import { clearAliasCache } from "../../src/data/aliasBuilder.js";
 import {
   clearBerriCache,
   getBerriModelProviderMap,
@@ -7,9 +8,15 @@ import {
 } from "../../src/providers/berriClient.js";
 
 describe("berriClient caching", () => {
+  beforeEach(() => {
+    clearBerriCache();
+    clearAliasCache();
+  });
+
   afterEach(() => {
     clearBerriCache();
-    vi.restoreAllMocks();
+    clearAliasCache();
+    mock.restore();
   });
 
   it("deduplicates in-flight fetches", async () => {
@@ -21,8 +28,7 @@ describe("berriClient caching", () => {
       },
     };
 
-    const fetchMock = vi
-      .spyOn(globalThis, "fetch")
+    const fetchMock = spyOn(globalThis, "fetch")
       .mockResolvedValue(
         new Response(JSON.stringify(payload), {
           status: 200,
@@ -37,7 +43,7 @@ describe("berriClient caching", () => {
   });
 
   it("exposes model to provider mapping from first fetch", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+    spyOn(globalThis, "fetch").mockResolvedValueOnce(
       new Response(
         JSON.stringify({
           "openai/gpt-4o-mini": {

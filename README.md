@@ -1,10 +1,10 @@
-# llmcost SDKs
+# ai-cost-calculator SDKs
 
 Dual SDK implementation for calculating LLM API costs from provider response usage and live pricing sources.
 
 ## Packages
 
-- `node/`: TypeScript SDK (`bun`, `vitest`)
+- `node/`: TypeScript SDK (`bun`)
 - `python/`: Python SDK (`uv`, `pytest`)
 - `configs/`: Shared config contract and mappings used by both SDKs
 

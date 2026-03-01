@@ -2,8 +2,9 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test";
 
+import { clearAliasCache } from "../../src/data/aliasBuilder.js";
 import {
   extractResponseMetadata,
   inferProviderFromModel,
@@ -88,13 +89,19 @@ function buildBerriProviderPayload(): Record<string, Record<string, unknown>> {
 }
 
 describe("provider inference coverage", () => {
+  beforeEach(() => {
+    clearBerriCache();
+    clearAliasCache();
+  });
+
   afterEach(() => {
     clearBerriCache();
-    vi.restoreAllMocks();
+    clearAliasCache();
+    mock.restore();
   });
 
   it("infers providers for canonical and aliased models", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+    spyOn(globalThis, "fetch").mockResolvedValueOnce(
       new Response(JSON.stringify(buildBerriProviderPayload()), { status: 200 }),
     );
 
@@ -122,7 +129,7 @@ describe("provider inference coverage", () => {
   });
 
   it("extracts response metadata across multiple model families", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+    spyOn(globalThis, "fetch").mockResolvedValueOnce(
       new Response(JSON.stringify(buildBerriProviderPayload()), { status: 200 }),
     );
 
@@ -138,7 +145,7 @@ describe("provider inference coverage", () => {
   });
 
   it("throws for models with no provider mapping", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+    spyOn(globalThis, "fetch").mockResolvedValueOnce(
       new Response(JSON.stringify(buildBerriProviderPayload()), { status: 200 }),
     );
 

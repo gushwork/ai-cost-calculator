@@ -2,19 +2,25 @@ import { BestEffortCalculationError } from "../errors.js";
 import type { CostResult } from "../types.js";
 import { BerrilmBasedCalculator } from "./BerrilmBasedCalculator.js";
 import { Calculator } from "./Calculator.js";
+import { HeliconeBasedCalculator } from "./HeliconeBasedCalculator.js";
+import { JinaBasedCalculator } from "./JinaBasedCalculator.js";
 import { OpenRouterBasedCalculator } from "./OpenRouterBasedCalculator.js";
 import { PortkeyBasedCalculator } from "./PortkeyBasedCalculator.js";
 
 type StaticCalculator =
   | typeof OpenRouterBasedCalculator
   | typeof BerrilmBasedCalculator
-  | typeof PortkeyBasedCalculator;
+  | typeof PortkeyBasedCalculator
+  | typeof JinaBasedCalculator
+  | typeof HeliconeBasedCalculator;
 
 export class BestEffortCalculator extends Calculator {
   static calculators: StaticCalculator[] = [
     OpenRouterBasedCalculator,
     BerrilmBasedCalculator,
     PortkeyBasedCalculator,
+    JinaBasedCalculator,
+    HeliconeBasedCalculator,
   ];
 
   static override async getCost(response: unknown): Promise<CostResult> {

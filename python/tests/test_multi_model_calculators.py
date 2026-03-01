@@ -2,16 +2,16 @@ from unittest.mock import patch
 
 import pytest
 
-from llmcost.calculator.berri import BerrilmBasedCalculator
-from llmcost.calculator.best_effort import BestEffortCalculator
-from llmcost.calculator.openrouter import OpenRouterBasedCalculator
-from llmcost.calculator.portkey import PortkeyBasedCalculator
-from llmcost.errors import ModelNotFoundError, ProviderInferenceError, UsageNotFoundError
-from llmcost.types import NormalizedPricingModel
+from ai_cost_calculator.calculator.berri import BerrilmBasedCalculator
+from ai_cost_calculator.calculator.best_effort import BestEffortCalculator
+from ai_cost_calculator.calculator.openrouter import OpenRouterBasedCalculator
+from ai_cost_calculator.calculator.portkey import PortkeyBasedCalculator
+from ai_cost_calculator.errors import ModelNotFoundError, ProviderInferenceError, UsageNotFoundError
+from ai_cost_calculator.types import NormalizedPricingModel
 
 
-@patch("llmcost.calculator.berri.get_berri_pricing_map")
-@patch("llmcost.data.response_transformer.get_berri_model_provider_map")
+@patch("ai_cost_calculator.calculator.berri.get_berri_pricing_map")
+@patch("ai_cost_calculator.data.response_transformer.get_berri_model_provider_map")
 def test_berri_calculator_with_anthropic_model(mock_provider_map, mock_berri_pricing):
     mock_provider_map.return_value = {
         "anthropic/claude-3-5-sonnet": "anthropic",
@@ -35,8 +35,8 @@ def test_berri_calculator_with_anthropic_model(mock_provider_map, mock_berri_pri
     assert result == {"currency": "USD", "cost": 0.002}
 
 
-@patch("llmcost.calculator.openrouter.get_openrouter_pricing_map")
-@patch("llmcost.data.response_transformer.get_berri_model_provider_map")
+@patch("ai_cost_calculator.calculator.openrouter.get_openrouter_pricing_map")
+@patch("ai_cost_calculator.data.response_transformer.get_berri_model_provider_map")
 def test_openrouter_calculator_with_google_model(mock_provider_map, mock_openrouter_pricing):
     mock_provider_map.return_value = {
         "google/gemini-1.5-pro": "google",
@@ -64,8 +64,8 @@ def test_openrouter_calculator_with_google_model(mock_provider_map, mock_openrou
     assert result == {"currency": "USD", "cost": 0.003}
 
 
-@patch("llmcost.calculator.portkey.get_portkey_pricing_map")
-@patch("llmcost.data.response_transformer.get_berri_model_provider_map")
+@patch("ai_cost_calculator.calculator.portkey.get_portkey_pricing_map")
+@patch("ai_cost_calculator.data.response_transformer.get_berri_model_provider_map")
 def test_portkey_calculator_with_alias_fallback(mock_provider_map, mock_portkey_pricing):
     mock_provider_map.return_value = {
         "deepseek/deepseek-chat": "deepseek",
@@ -89,10 +89,10 @@ def test_portkey_calculator_with_alias_fallback(mock_provider_map, mock_portkey_
     assert result == {"currency": "USD", "cost": 0.02}
 
 
-@patch("llmcost.calculator.portkey.get_portkey_pricing_map")
-@patch("llmcost.calculator.berri.get_berri_pricing_map")
-@patch("llmcost.calculator.openrouter.get_openrouter_pricing_map")
-@patch("llmcost.data.response_transformer.get_berri_model_provider_map")
+@patch("ai_cost_calculator.calculator.portkey.get_portkey_pricing_map")
+@patch("ai_cost_calculator.calculator.berri.get_berri_pricing_map")
+@patch("ai_cost_calculator.calculator.openrouter.get_openrouter_pricing_map")
+@patch("ai_cost_calculator.data.response_transformer.get_berri_model_provider_map")
 def test_best_effort_fallback_to_portkey(
     mock_provider_map,
     mock_openrouter_pricing,
@@ -123,8 +123,8 @@ def test_best_effort_fallback_to_portkey(
     assert result == {"currency": "USD", "cost": 0.2}
 
 
-@patch("llmcost.calculator.berri.get_berri_pricing_map")
-@patch("llmcost.data.response_transformer.get_berri_model_provider_map")
+@patch("ai_cost_calculator.calculator.berri.get_berri_pricing_map")
+@patch("ai_cost_calculator.data.response_transformer.get_berri_model_provider_map")
 def test_model_not_found_when_provider_exists_but_no_pricing(
     mock_provider_map, mock_berri_pricing
 ):
@@ -143,8 +143,8 @@ def test_model_not_found_when_provider_exists_but_no_pricing(
         )
 
 
-@patch("llmcost.calculator.berri.get_berri_pricing_map")
-@patch("llmcost.data.response_transformer.get_berri_model_provider_map")
+@patch("ai_cost_calculator.calculator.berri.get_berri_pricing_map")
+@patch("ai_cost_calculator.data.response_transformer.get_berri_model_provider_map")
 def test_usage_not_found_for_missing_usage_payload(mock_provider_map, mock_berri_pricing):
     mock_provider_map.return_value = {
         "mistralai/mistral-large": "mistral",
@@ -163,7 +163,7 @@ def test_usage_not_found_for_missing_usage_payload(mock_provider_map, mock_berri
         BerrilmBasedCalculator.get_cost({"model": "mistralai/mistral-large"})
 
 
-@patch("llmcost.data.response_transformer.get_berri_model_provider_map")
+@patch("ai_cost_calculator.data.response_transformer.get_berri_model_provider_map")
 def test_provider_inference_error_for_unknown_model(mock_provider_map):
     mock_provider_map.return_value = {
         "openai/gpt-4o-mini": "openai",

@@ -182,6 +182,20 @@
       "$.usage.total_tokens"
     ]
   },
+  "jina_ai": {
+    "inputTokensPaths": [
+      "$.usage.prompt_tokens",
+      "$.usage.input_tokens",
+      "$.usage.total_tokens"
+    ],
+    "outputTokensPaths": [
+      "$.usage.completion_tokens",
+      "$.usage.output_tokens"
+    ],
+    "totalTokensPaths": [
+      "$.usage.total_tokens"
+    ]
+  },
   "default": {
     "inputTokensPaths": [
       "$.usage.prompt_tokens",

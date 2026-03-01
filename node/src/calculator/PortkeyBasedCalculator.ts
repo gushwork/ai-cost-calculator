@@ -2,7 +2,7 @@ import {
   extractResponseMetadata,
   extractTokenUsage,
 } from "../data/responseTransformer.js";
-import { resolveCanonicalModelId } from "../data/modelResolver.js";
+import { stripProviderPrefix } from "../data/modelResolver.js";
 import { ModelNotFoundError, PricingUnavailableError } from "../errors.js";
 import { getPortkeyPricingMap } from "../providers/portkeyClient.js";
 import type { CostResult } from "../types.js";
@@ -20,7 +20,7 @@ export class PortkeyBasedCalculator extends Calculator {
     const normalizedModel = model.trim().toLowerCase();
     const pricing =
       pricingMap.get(normalizedModel) ??
-      pricingMap.get(resolveCanonicalModelId(normalizedModel));
+      pricingMap.get(stripProviderPrefix(normalizedModel));
 
     if (!pricing) {
       throw new ModelNotFoundError(`Model "${model}" not found in Portkey pricing.`);

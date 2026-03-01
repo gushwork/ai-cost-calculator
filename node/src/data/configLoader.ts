@@ -3,7 +3,6 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import type {
-  ModelAliasesConfig,
   ProviderPricingMappingsConfig,
   ResponseMappingsConfig,
 } from "../types.js";
@@ -36,10 +35,6 @@ function readJsonFile<T>(fileName: string): T {
 
 export function loadResponseMappingsConfig(): ResponseMappingsConfig {
   return readJsonFile<ResponseMappingsConfig>("response-mappings.json");
-}
-
-export function loadModelAliasesConfig(): ModelAliasesConfig {
-  return readJsonFile<ModelAliasesConfig>("model-aliases.json");
 }
 
 export function loadProviderPricingMappingsConfig(): ProviderPricingMappingsConfig {

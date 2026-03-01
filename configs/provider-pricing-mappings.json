@@ -65,5 +65,20 @@
     "currencyPaths": [
       "$.pricing.currency"
     ]
+  },
+  "jina": {
+    "modelsPath": "$",
+    "modelIdPaths": [
+      "$.model"
+    ],
+    "inputCostPer1MPaths": [
+      "$.pay_as_you_go.request_token.price"
+    ],
+    "outputCostPer1MPaths": [
+      "$.pay_as_you_go.response_token.price"
+    ],
+    "currencyPaths": [
+      "$.currency"
+    ]
   }
 }

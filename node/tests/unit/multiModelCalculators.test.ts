@@ -1,28 +1,43 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test";
 
 import { BerrilmBasedCalculator } from "../../src/calculator/BerrilmBasedCalculator.js";
 import { BestEffortCalculator } from "../../src/calculator/BestEffortCalculator.js";
 import { OpenRouterBasedCalculator } from "../../src/calculator/OpenRouterBasedCalculator.js";
 import { PortkeyBasedCalculator } from "../../src/calculator/PortkeyBasedCalculator.js";
+import { clearAliasCache } from "../../src/data/aliasBuilder.js";
 import {
   ModelNotFoundError,
   ProviderInferenceError,
   UsageNotFoundError,
 } from "../../src/errors.js";
 import { clearBerriCache } from "../../src/providers/berriClient.js";
+import { clearHeliconeCache } from "../../src/providers/heliconeClient.js";
+import { clearJinaCache } from "../../src/providers/jinaClient.js";
 import { clearOpenRouterCache } from "../../src/providers/openrouterClient.js";
 import { clearPortkeyCache } from "../../src/providers/portkeyClient.js";
 
 describe("multi-model calculators", () => {
+  beforeEach(() => {
+    clearBerriCache();
+    clearOpenRouterCache();
+    clearPortkeyCache();
+    clearJinaCache();
+    clearHeliconeCache();
+    clearAliasCache();
+  });
+
   afterEach(() => {
     clearBerriCache();
     clearOpenRouterCache();
     clearPortkeyCache();
-    vi.restoreAllMocks();
+    clearJinaCache();
+    clearHeliconeCache();
+    clearAliasCache();
+    mock.restore();
   });
 
   it("calculates Berri cost for anthropic model", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+    spyOn(globalThis, "fetch").mockResolvedValueOnce(
       new Response(
         JSON.stringify({
           "anthropic/claude-3-5-sonnet": {
@@ -44,7 +59,7 @@ describe("multi-model calculators", () => {
   });
 
   it("calculates OpenRouter cost for google model", async () => {
-    vi.spyOn(globalThis, "fetch")
+    spyOn(globalThis, "fetch")
       .mockResolvedValueOnce(
         new Response(
           JSON.stringify({
@@ -84,7 +99,7 @@ describe("multi-model calculators", () => {
   });
 
   it("calculates Portkey cost with canonical alias fallback", async () => {
-    vi.spyOn(globalThis, "fetch")
+    spyOn(globalThis, "fetch")
       .mockResolvedValueOnce(
         new Response(
           JSON.stringify({
@@ -126,7 +141,7 @@ describe("multi-model calculators", () => {
   });
 
   it("falls back to Portkey when OpenRouter and Berri miss", async () => {
-    vi.spyOn(globalThis, "fetch")
+    spyOn(globalThis, "fetch")
       .mockResolvedValueOnce(
         new Response(
           JSON.stringify({
@@ -165,7 +180,7 @@ describe("multi-model calculators", () => {
   });
 
   it("throws ModelNotFoundError when mapped provider exists but pricing entry is missing", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+    spyOn(globalThis, "fetch").mockResolvedValueOnce(
       new Response(
         JSON.stringify({
           "meta/llama-3.1-70b-instruct": {
@@ -185,7 +200,7 @@ describe("multi-model calculators", () => {
   });
 
   it("throws UsageNotFoundError for missing usage payload", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+    spyOn(globalThis, "fetch").mockResolvedValueOnce(
       new Response(
         JSON.stringify({
           "mistralai/mistral-large": {
@@ -206,7 +221,7 @@ describe("multi-model calculators", () => {
   });
 
   it("throws ProviderInferenceError for unknown model", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+    spyOn(globalThis, "fetch").mockResolvedValueOnce(
       new Response(
         JSON.stringify({
           "openai/gpt-4o-mini": {

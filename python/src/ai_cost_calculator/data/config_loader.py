@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from typing import Any
 
-from llmcost.types import ModelAliasesConfig, ResponseMappingsConfig
+from ai_cost_calculator.types import ResponseMappingsConfig
 
 
 def _resolve_configs_dir() -> Path:
@@ -27,7 +27,3 @@ def _read_json(file_name: str) -> Any:
 
 def load_response_mappings_config() -> ResponseMappingsConfig:
     return _read_json("response-mappings.json")
-
-
-def load_model_aliases_config() -> ModelAliasesConfig:
-    return _read_json("model-aliases.json")

@@ -1,10 +1,13 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test";
 
 import { BestEffortCalculator } from "../../src/calculator/BestEffortCalculator.js";
 import { BerrilmBasedCalculator } from "../../src/calculator/BerrilmBasedCalculator.js";
 import { OpenRouterBasedCalculator } from "../../src/calculator/OpenRouterBasedCalculator.js";
 import { PortkeyBasedCalculator } from "../../src/calculator/PortkeyBasedCalculator.js";
+import { clearAliasCache } from "../../src/data/aliasBuilder.js";
 import { clearBerriCache } from "../../src/providers/berriClient.js";
+import { clearHeliconeCache } from "../../src/providers/heliconeClient.js";
+import { clearJinaCache } from "../../src/providers/jinaClient.js";
 import { clearOpenRouterCache } from "../../src/providers/openrouterClient.js";
 import { clearPortkeyCache } from "../../src/providers/portkeyClient.js";
 
@@ -18,15 +21,27 @@ const response = {
 };
 
 describe("calculators", () => {
+  beforeEach(() => {
+    clearBerriCache();
+    clearOpenRouterCache();
+    clearPortkeyCache();
+    clearJinaCache();
+    clearHeliconeCache();
+    clearAliasCache();
+  });
+
   afterEach(() => {
     clearBerriCache();
     clearOpenRouterCache();
     clearPortkeyCache();
-    vi.restoreAllMocks();
+    clearJinaCache();
+    clearHeliconeCache();
+    clearAliasCache();
+    mock.restore();
   });
 
   it("calculates cost from berri data", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+    spyOn(globalThis, "fetch").mockResolvedValueOnce(
       new Response(
         JSON.stringify({
           "gpt-4o-mini": {
@@ -47,7 +62,7 @@ describe("calculators", () => {
   });
 
   it("calculates cost from openrouter data directly", async () => {
-    vi.spyOn(globalThis, "fetch")
+    spyOn(globalThis, "fetch")
       .mockResolvedValueOnce(
         new Response(
           JSON.stringify({
@@ -83,7 +98,7 @@ describe("calculators", () => {
   });
 
   it("best effort falls back from berri to portkey", async () => {
-    vi.spyOn(globalThis, "fetch")
+    spyOn(globalThis, "fetch")
       .mockResolvedValueOnce(
         new Response(
           JSON.stringify({
@@ -140,7 +155,7 @@ describe("calculators", () => {
   });
 
   it("calculates cost from portkey data directly", async () => {
-    vi.spyOn(globalThis, "fetch")
+    spyOn(globalThis, "fetch")
       .mockResolvedValueOnce(
         new Response(
           JSON.stringify({

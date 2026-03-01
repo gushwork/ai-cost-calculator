@@ -1,14 +1,21 @@
 from unittest.mock import patch
 
-from llmcost.providers.berri_client import (
+from ai_cost_calculator.data.alias_builder import clear_alias_cache
+from ai_cost_calculator.providers.berri_client import (
     clear_berri_cache,
     get_berri_model_provider_map,
     get_berri_pricing_map,
 )
 
 
+def setup_function():
+    clear_berri_cache()
+    clear_alias_cache()
+
+
 def teardown_function():
     clear_berri_cache()
+    clear_alias_cache()
 
 
 @patch("httpx.get")

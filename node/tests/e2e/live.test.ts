@@ -2,9 +2,10 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "bun:test";
 
 import { BestEffortCalculator } from "../../src/calculator/BestEffortCalculator.js";
+import { getJinaPricingMap } from "../../src/providers/jinaClient.js";
 
 function loadDotEnv(dotEnvPath: string): Record<string, string> {
   if (!existsSync(dotEnvPath)) return {};
@@ -175,6 +176,33 @@ async function callOpenAICompletions(): Promise<LiveInvocation> {
 }
 
 describe("node e2e live", () => {
+  it.skipIf(!liveEnabled)(
+    "loads Jina model pricing from Portkey API",
+    async () => {
+      // #region agent log
+      fetch('http://127.0.0.1:7351/ingest/70f6bd8d-2515-4fe7-83a1-cda2e3d5fa3c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'2d553b'},body:JSON.stringify({sessionId:'2d553b',runId:'baseline',hypothesisId:'H1',location:'node/tests/e2e/live.test.ts:182',message:'before getJinaPricingMap call',data:{liveEnabled,importType:typeof getJinaPricingMap,isMockLike:Object.prototype.hasOwnProperty.call(getJinaPricingMap as object,'mock')},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
+      const pricingMap = await getJinaPricingMap();
+      // #region agent log
+      fetch('http://127.0.0.1:7351/ingest/70f6bd8d-2515-4fe7-83a1-cda2e3d5fa3c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'2d553b'},body:JSON.stringify({sessionId:'2d553b',runId:'baseline',hypothesisId:'H5',location:'node/tests/e2e/live.test.ts:184',message:'after getJinaPricingMap call',data:{isMap:pricingMap instanceof Map,constructorName:(pricingMap as { constructor?: { name?: string } } | undefined)?.constructor?.name,keyCount:pricingMap instanceof Map?pricingMap.size:null},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
+      const models = [
+        "jina-reranker-v3",
+        "jina-embeddings-v2-base-en",
+        "jina-reranker-v2-base-multilingual",
+        "jina-reranker-v1-base-en",
+        "jina-colbert-v2",
+      ];
+
+      for (const model of models) {
+        const pricing = pricingMap.get(model);
+        expect(pricing, `pricing for ${model}`).toBeDefined();
+        expect(pricing?.inputCostPer1M, `inputCostPer1M for ${model}`).toBeGreaterThan(0);
+        expect(pricing?.outputCostPer1M, `outputCostPer1M for ${model}`).toBe(0);
+      }
+    },
+  );
+
   it.skipIf(!liveEnabled)(
     "calculates cost using OpenRouter when available, else native API",
     async () => {

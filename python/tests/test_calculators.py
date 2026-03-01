@@ -1,12 +1,14 @@
 from unittest.mock import Mock, patch
 
-from llmcost.calculator.best_effort import BestEffortCalculator
-from llmcost.calculator.berri import BerrilmBasedCalculator
-from llmcost.calculator.openrouter import OpenRouterBasedCalculator
-from llmcost.calculator.portkey import PortkeyBasedCalculator
-from llmcost.providers.berri_client import clear_berri_cache
-from llmcost.providers.openrouter_client import clear_openrouter_cache
-from llmcost.providers.portkey_client import clear_portkey_cache
+from ai_cost_calculator.calculator.best_effort import BestEffortCalculator
+from ai_cost_calculator.calculator.berri import BerrilmBasedCalculator
+from ai_cost_calculator.calculator.openrouter import OpenRouterBasedCalculator
+from ai_cost_calculator.calculator.portkey import PortkeyBasedCalculator
+from ai_cost_calculator.data.alias_builder import clear_alias_cache
+from ai_cost_calculator.providers.berri_client import clear_berri_cache
+from ai_cost_calculator.providers.helicone_client import clear_helicone_cache
+from ai_cost_calculator.providers.openrouter_client import clear_openrouter_cache
+from ai_cost_calculator.providers.portkey_client import clear_portkey_cache
 
 
 RESPONSE = {
@@ -19,10 +21,20 @@ RESPONSE = {
 }
 
 
+def setup_function():
+    clear_berri_cache()
+    clear_openrouter_cache()
+    clear_portkey_cache()
+    clear_helicone_cache()
+    clear_alias_cache()
+
+
 def teardown_function():
     clear_berri_cache()
     clear_openrouter_cache()
     clear_portkey_cache()
+    clear_helicone_cache()
+    clear_alias_cache()
 
 
 def _mock_http_response(text: str) -> Mock:

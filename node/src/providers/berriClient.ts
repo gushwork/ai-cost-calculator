@@ -1,5 +1,5 @@
 import { loadProviderPricingMappingsConfig } from "../data/configLoader.js";
-import { normalizeModelId, resolveCanonicalModelId } from "../data/modelResolver.js";
+import { normalizeModelId, stripProviderPrefix } from "../data/modelResolver.js";
 import type { NormalizedPricingModel } from "../types.js";
 
 const BERRI_URL =
@@ -35,7 +35,10 @@ function addModel(
 ) {
   const normalized = normalizeModelId(modelId);
   map.set(normalized, data);
-  map.set(resolveCanonicalModelId(normalized), data);
+  const bare = stripProviderPrefix(normalized);
+  if (bare !== normalized) {
+    map.set(bare, data);
+  }
 }
 
 function addProvider(
@@ -44,9 +47,11 @@ function addProvider(
   provider: string,
 ) {
   const normalized = normalizeModelId(modelId);
-  const canonical = resolveCanonicalModelId(normalized);
   map.set(normalized, provider);
-  map.set(canonical, provider);
+  const bare = stripProviderPrefix(normalized);
+  if (bare !== normalized) {
+    map.set(bare, provider);
+  }
 }
 
 function extractProvider(entry: Record<string, unknown>): string | null {
@@ -72,7 +77,9 @@ async function fetchBerriData(): Promise<BerriData> {
 
   const pricingMap = new Map<string, NormalizedPricingModel>();
   const providerMap = new Map<string, string>();
-  for (const [key, value] of Object.entries(payload)) {
+
+  const entries = Object.entries(payload);
+  for (const [key, value] of entries) {
     const provider = extractProvider(value);
     if (provider) {
       addProvider(providerMap, key, provider);
@@ -89,8 +96,9 @@ async function fetchBerriData(): Promise<BerriData> {
       continue;
     }
 
+    const bareKey = stripProviderPrefix(normalizeModelId(key));
     const normalized: NormalizedPricingModel = {
-      modelId: resolveCanonicalModelId(key),
+      modelId: bareKey,
       inputCostPer1M,
       outputCostPer1M,
       currency: "USD",

@@ -5,7 +5,7 @@ import httpx
 import pytest
 from dotenv import load_dotenv
 
-from llmcost.calculator.best_effort import BestEffortCalculator
+from ai_cost_calculator.calculator.best_effort import BestEffortCalculator
 
 load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 os.environ["LLMCOST_CONFIGS_DIR"] = str(Path(__file__).resolve().parents[2] / "configs")

@@ -1,6 +1,6 @@
 from typing import Any
 
-from llmcost.types import CostResult
+from ai_cost_calculator.types import CostResult
 
 
 class Calculator:

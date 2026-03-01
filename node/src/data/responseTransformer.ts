@@ -2,7 +2,7 @@ import { JSONPath } from "jsonpath-plus";
 
 import { ModelInferenceError, ProviderInferenceError, UsageNotFoundError } from "../errors.js";
 import type { TokenUsage } from "../types.js";
-import { normalizeModelId, resolveCanonicalModelId } from "./modelResolver.js";
+import { normalizeModelId, stripProviderPrefix } from "./modelResolver.js";
 import { getBerriModelProviderMap } from "../providers/berriClient.js";
 import { loadResponseMappingsConfig } from "./configLoader.js";
 
@@ -82,14 +82,41 @@ export function extractResponseModel(response: unknown): string {
 export async function inferProviderFromModel(model: string): Promise<string> {
   const providerMap = await getBerriModelProviderMap();
   const normalizedModel = normalizeModelId(model);
-  const canonicalModel = resolveCanonicalModelId(normalizedModel);
-  const provider = providerMap.get(normalizedModel) ?? providerMap.get(canonicalModel);
-  if (!provider) {
-    throw new ProviderInferenceError(
-      `Could not infer provider from model "${model}" using Berri config mapping.`,
-    );
+
+  let provider = providerMap.get(normalizedModel);
+  if (provider) return provider;
+
+  const stripped = stripProviderPrefix(normalizedModel);
+  if (stripped !== normalizedModel) {
+    provider = providerMap.get(stripped);
+    if (provider) return provider;
+
+    const doubleStripped = stripProviderPrefix(stripped);
+    if (doubleStripped !== stripped) {
+      provider = providerMap.get(doubleStripped);
+      if (provider) return provider;
+    }
   }
-  return provider;
+
+  let bestMatch: { key: string; provider: string } | null = null;
+  for (const [key, value] of providerMap) {
+    if (
+      normalizedModel.startsWith(key) &&
+      normalizedModel.length > key.length
+    ) {
+      const sep = normalizedModel[key.length];
+      if (sep === "-" || sep === ":" || sep === ".") {
+        if (!bestMatch || key.length > bestMatch.key.length) {
+          bestMatch = { key, provider: value };
+        }
+      }
+    }
+  }
+  if (bestMatch) return bestMatch.provider;
+
+  throw new ProviderInferenceError(
+    `Could not infer provider from model "${model}" using Berri config mapping.`,
+  );
 }
 
 export async function extractResponseMetadata(

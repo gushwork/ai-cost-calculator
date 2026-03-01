@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from llmcost.data.response_transformer import extract_token_usage
+from ai_cost_calculator.data.response_transformer import extract_token_usage
 
 os.environ["LLMCOST_CONFIGS_DIR"] = str(Path(__file__).resolve().parents[2] / "configs")
 

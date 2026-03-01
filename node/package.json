@@ -1,6 +1,6 @@
 {
-  "name": "@llmcost/sdk",
-  "version": "0.1.0",
+  "name": "ai-cost-calculator",
+  "version": "0.1.1",
   "description": "TypeScript SDK for calculating LLM API costs",
   "type": "module",
   "main": "./dist/index.js",
@@ -17,18 +17,17 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "vitest run",
-    "test:e2e": "vitest run tests/e2e"
+    "test": "bun test",
+    "test:e2e": "bun test tests/e2e"
   },
   "engines": {
     "node": ">=18"
   },
   "dependencies": {
-    "jsonpath-plus": "^10.3.0"
+    "jsonpath-plus": "^10.4.0"
   },
   "devDependencies": {
-    "@types/node": "^22.10.0",
-    "typescript": "^5.7.0",
-    "vitest": "^2.1.0"
+    "bun-types": "latest",
+    "typescript": "^5.9.3"
   }
 }

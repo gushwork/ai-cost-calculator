@@ -30,11 +30,6 @@ export interface ResponseMappingsConfig {
   [provider: string]: ResponseProviderMapping;
 }
 
-export interface ModelAliasesConfig {
-  canonical: Record<string, string[]>;
-  normalized: Record<string, string>;
-}
-
 export interface PricingProviderMapping {
   modelsPath: string;
   modelIdPaths: string[];

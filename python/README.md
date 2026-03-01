@@ -1,4 +1,4 @@
-# llmcost (Python)
+# ai-cost-calculator (Python)
 
 Python SDK for calculating LLM response costs with provider-based usage extraction and pricing lookups.
 
@@ -11,7 +11,7 @@ uv sync
 ## Usage
 
 ```python
-from llmcost import BestEffortCalculator
+from ai_cost_calculator import BestEffortCalculator
 
 result = BestEffortCalculator.get_cost(
     {

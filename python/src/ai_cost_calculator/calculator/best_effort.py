@@ -1,11 +1,12 @@
 from typing import Any
 
-from llmcost.calculator.base import Calculator
-from llmcost.calculator.berri import BerrilmBasedCalculator
-from llmcost.calculator.openrouter import OpenRouterBasedCalculator
-from llmcost.calculator.portkey import PortkeyBasedCalculator
-from llmcost.errors import BestEffortCalculationError
-from llmcost.types import CostResult
+from ai_cost_calculator.calculator.base import Calculator
+from ai_cost_calculator.calculator.berri import BerrilmBasedCalculator
+from ai_cost_calculator.calculator.helicone import HeliconeBasedCalculator
+from ai_cost_calculator.calculator.openrouter import OpenRouterBasedCalculator
+from ai_cost_calculator.calculator.portkey import PortkeyBasedCalculator
+from ai_cost_calculator.errors import BestEffortCalculationError
+from ai_cost_calculator.types import CostResult
 
 
 class BestEffortCalculator(Calculator):
@@ -13,6 +14,7 @@ class BestEffortCalculator(Calculator):
         OpenRouterBasedCalculator,
         BerrilmBasedCalculator,
         PortkeyBasedCalculator,
+        HeliconeBasedCalculator,
     ]
 
     @staticmethod

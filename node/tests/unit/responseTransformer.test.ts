@@ -1,7 +1,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, mock, spyOn } from "bun:test";
 
 import {
   extractResponseMetadata,
@@ -18,7 +18,7 @@ process.env.LLMCOST_CONFIGS_DIR = path.resolve(
 describe("responseTransformer", () => {
   afterEach(() => {
     clearBerriCache();
-    vi.restoreAllMocks();
+    mock.restore();
   });
 
   it("extracts prompt and completion tokens", () => {
@@ -96,7 +96,7 @@ describe("responseTransformer", () => {
   });
 
   it("extracts model and infers provider from Berri config", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+    spyOn(globalThis, "fetch").mockResolvedValueOnce(
       new Response(
         JSON.stringify({
           "openai/gpt-4o-mini": {

@@ -3,8 +3,8 @@ from pathlib import Path
 
 from unittest.mock import patch
 
-from llmcost.data.response_transformer import extract_response_metadata, extract_token_usage
-from llmcost.providers.berri_client import clear_berri_cache
+from ai_cost_calculator.data.response_transformer import extract_response_metadata, extract_token_usage
+from ai_cost_calculator.providers.berri_client import clear_berri_cache
 
 os.environ["LLMCOST_CONFIGS_DIR"] = str(Path(__file__).resolve().parents[2] / "configs")
 
@@ -56,7 +56,7 @@ def teardown_function():
     clear_berri_cache()
 
 
-@patch("llmcost.providers.berri_client.httpx.get")
+@patch("ai_cost_calculator.providers.berri_client.httpx.get")
 def test_extract_response_metadata_from_berri_provider_map(mock_get):
     mock_get.return_value.status_code = 200
     mock_get.return_value.raise_for_status.return_value = None

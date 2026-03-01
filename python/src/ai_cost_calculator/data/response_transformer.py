@@ -2,11 +2,11 @@ from typing import Any
 
 from jsonpath_ng import parse
 
-from llmcost.data.model_resolver import normalize_model_id, resolve_canonical_model_id
-from llmcost.data.config_loader import load_response_mappings_config
-from llmcost.errors import ModelInferenceError, ProviderInferenceError, UsageNotFoundError
-from llmcost.providers.berri_client import get_berri_model_provider_map
-from llmcost.types import TokenUsage
+from ai_cost_calculator.data.model_resolver import normalize_model_id, strip_provider_prefix
+from ai_cost_calculator.data.config_loader import load_response_mappings_config
+from ai_cost_calculator.errors import ModelInferenceError, ProviderInferenceError, UsageNotFoundError
+from ai_cost_calculator.providers.berri_client import get_berri_model_provider_map
+from ai_cost_calculator.types import TokenUsage
 
 
 def _get_first_numeric_value(response: Any, paths: list[str]) -> float | None:
@@ -79,13 +79,38 @@ def extract_response_model(response: Any) -> str:
 def infer_provider_from_model(model: str) -> str:
     provider_map = get_berri_model_provider_map()
     normalized_model = normalize_model_id(model)
-    canonical_model = resolve_canonical_model_id(normalized_model)
-    provider = provider_map.get(normalized_model) or provider_map.get(canonical_model)
-    if provider is None:
-        raise ProviderInferenceError(
-            f'Could not infer provider from model "{model}" using Berri config mapping.'
-        )
-    return provider
+
+    provider = provider_map.get(normalized_model)
+    if provider is not None:
+        return provider
+
+    stripped = strip_provider_prefix(normalized_model)
+    if stripped != normalized_model:
+        provider = provider_map.get(stripped)
+        if provider is not None:
+            return provider
+        double_stripped = strip_provider_prefix(stripped)
+        if double_stripped != stripped:
+            provider = provider_map.get(double_stripped)
+            if provider is not None:
+                return provider
+
+    best_match: tuple[str, str] | None = None
+    for key, value in provider_map.items():
+        if (
+            normalized_model.startswith(key)
+            and len(normalized_model) > len(key)
+        ):
+            sep = normalized_model[len(key)]
+            if sep in ("-", ":", "."):
+                if best_match is None or len(key) > len(best_match[0]):
+                    best_match = (key, value)
+    if best_match is not None:
+        return best_match[1]
+
+    raise ProviderInferenceError(
+        f'Could not infer provider from model "{model}" using Berri config mapping.'
+    )
 
 
 def extract_response_metadata(response: Any) -> dict[str, str]:

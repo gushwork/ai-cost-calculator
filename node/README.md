@@ -1,4 +1,4 @@
-# @llmcost/sdk (Node)
+# ai-cost-calculator (Node)
 
 TypeScript SDK for calculating LLM response costs with provider-based usage extraction and pricing lookups.
 
@@ -11,7 +11,7 @@ npm install
 ## Usage
 
 ```ts
-import { BestEffortCalculator } from "@llmcost/sdk";
+import { BestEffortCalculator } from "ai-cost-calculator";
 
 const result = await BestEffortCalculator.getCost(
   {

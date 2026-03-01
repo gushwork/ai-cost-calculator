@@ -1,14 +1,21 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test";
 
+import { clearAliasCache } from "../../src/data/aliasBuilder.js";
 import {
   clearOpenRouterCache,
   getOpenRouterPricingMap,
 } from "../../src/providers/openrouterClient.js";
 
 describe("openrouterClient caching", () => {
+  beforeEach(() => {
+    clearOpenRouterCache();
+    clearAliasCache();
+  });
+
   afterEach(() => {
     clearOpenRouterCache();
-    vi.restoreAllMocks();
+    clearAliasCache();
+    mock.restore();
   });
 
   it("deduplicates in-flight fetches", async () => {
@@ -24,8 +31,7 @@ describe("openrouterClient caching", () => {
       ],
     };
 
-    const fetchMock = vi
-      .spyOn(globalThis, "fetch")
+    const fetchMock = spyOn(globalThis, "fetch")
       .mockResolvedValue(
         new Response(JSON.stringify(payload), {
           status: 200,
@@ -40,7 +46,7 @@ describe("openrouterClient caching", () => {
   });
 
   it("parses currency-prefixed pricing and canonical slug aliases", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+    spyOn(globalThis, "fetch").mockResolvedValueOnce(
       new Response(
         JSON.stringify({
           data: [

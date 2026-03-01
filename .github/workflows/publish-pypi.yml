@@ -1,0 +1,35 @@
+name: Publish to PyPI
+
+on:
+  push:
+    tags:
+      - "python/v*"
+
+jobs:
+  publish:
+    name: Build and Publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: python
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install build
+
+      - run: pip install -e ".[dev]"
+
+      - run: pytest tests/ --ignore=tests/test_e2e_live.py -v
+
+      - run: python -m build
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: python/dist/

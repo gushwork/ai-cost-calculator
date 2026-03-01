@@ -4,8 +4,8 @@ from typing import Any
 
 import httpx
 
-from llmcost.data.model_resolver import normalize_model_id, resolve_canonical_model_id
-from llmcost.types import NormalizedPricingModel
+from ai_cost_calculator.data.model_resolver import normalize_model_id, strip_provider_prefix
+from ai_cost_calculator.types import NormalizedPricingModel
 
 OPENROUTER_MODELS_URL = "https://openrouter.ai/api/v1/models"
 _cache: dict[str, NormalizedPricingModel] | None = None
@@ -74,18 +74,22 @@ def get_openrouter_pricing_map() -> dict[str, NormalizedPricingModel]:
         if input_cost <= 0 and output_cost <= 0:
             continue
 
+        bare_id = strip_provider_prefix(normalize_model_id(model_raw))
         normalized = NormalizedPricingModel(
-            model_id=resolve_canonical_model_id(model_raw),
+            model_id=bare_id,
             input_cost_per_1m=input_cost,
             output_cost_per_1m=output_cost,
             currency="USD",
         )
         keys = {
             normalize_model_id(model_raw),
-            normalize_model_id(normalized.model_id),
+            bare_id,
         }
         if isinstance(model_id, str):
             keys.add(normalize_model_id(model_id))
+            id_bare = strip_provider_prefix(normalize_model_id(model_id))
+            if id_bare != normalize_model_id(model_id):
+                keys.add(id_bare)
         if isinstance(canonical_slug, str):
             keys.add(normalize_model_id(canonical_slug))
         if (

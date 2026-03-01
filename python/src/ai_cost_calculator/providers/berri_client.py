@@ -3,8 +3,8 @@ from typing import Any
 
 import httpx
 
-from llmcost.data.model_resolver import normalize_model_id, resolve_canonical_model_id
-from llmcost.types import NormalizedPricingModel
+from ai_cost_calculator.data.model_resolver import normalize_model_id, strip_provider_prefix
+from ai_cost_calculator.types import NormalizedPricingModel
 
 BERRI_URL = (
     "https://raw.githubusercontent.com/BerriAI/litellm/main/model_prices_and_context_window.json"
@@ -65,9 +65,10 @@ def _fetch_berri_data() -> tuple[dict[str, NormalizedPricingModel], dict[str, st
         provider = _extract_provider(entry)
         if provider is not None:
             normalized_model = normalize_model_id(model_id)
-            canonical_model = resolve_canonical_model_id(model_id)
             provider_out[normalized_model] = provider
-            provider_out[canonical_model] = provider
+            bare = strip_provider_prefix(normalized_model)
+            if bare != normalized_model:
+                provider_out[bare] = provider
 
         input_cost = _to_cost_per_1m(entry, "input_cost_per_token", "input_cost_per_1k_tokens")
         output_cost = _to_cost_per_1m(
@@ -76,14 +77,17 @@ def _fetch_berri_data() -> tuple[dict[str, NormalizedPricingModel], dict[str, st
         if input_cost <= 0 and output_cost <= 0:
             continue
 
+        norm_key = normalize_model_id(model_id)
+        bare_key = strip_provider_prefix(norm_key)
         normalized = NormalizedPricingModel(
-            model_id=resolve_canonical_model_id(model_id),
+            model_id=bare_key,
             input_cost_per_1m=input_cost,
             output_cost_per_1m=output_cost,
             currency="USD",
         )
-        out[normalize_model_id(model_id)] = normalized
-        out[normalized.model_id] = normalized
+        out[norm_key] = normalized
+        if bare_key != norm_key:
+            out[bare_key] = normalized
 
     return out, provider_out
 

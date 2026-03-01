@@ -1,4 +1,4 @@
-import { normalizeModelId, resolveCanonicalModelId } from "../data/modelResolver.js";
+import { normalizeModelId, stripProviderPrefix } from "../data/modelResolver.js";
 import type { NormalizedPricingModel } from "../types.js";
 
 const OPENROUTER_MODELS_URL = "https://openrouter.ai/api/v1/models";
@@ -62,9 +62,9 @@ async function fetchOpenRouterPricing(): Promise<Map<string, NormalizedPricingMo
     const outputCostPer1M = parsePerTokenToPer1M(model.pricing?.completion) ?? inputCostPer1M;
     if (inputCostPer1M <= 0 && outputCostPer1M <= 0) continue;
 
-    const canonicalId = resolveCanonicalModelId(modelRaw);
+    const bareId = stripProviderPrefix(normalizeModelId(modelRaw));
     const normalized: NormalizedPricingModel = {
-      modelId: canonicalId,
+      modelId: bareId,
       inputCostPer1M,
       outputCostPer1M,
       currency: "USD",
@@ -72,13 +72,15 @@ async function fetchOpenRouterPricing(): Promise<Map<string, NormalizedPricingMo
 
     const keys = new Set<string>([
       normalizeModelId(modelRaw),
-      normalizeModelId(canonicalId),
+      bareId,
     ]);
-    if (idRaw) keys.add(normalizeModelId(idRaw));
+    if (idRaw) {
+      keys.add(normalizeModelId(idRaw));
+      const idBare = stripProviderPrefix(normalizeModelId(idRaw));
+      if (idBare !== normalizeModelId(idRaw)) keys.add(idBare);
+    }
     if (canonicalSlugRaw) keys.add(normalizeModelId(canonicalSlugRaw));
 
-    // OpenRouter can return canonical_slug without provider prefix.
-    // Preserve both provider/model and model-only lookups when possible.
     if (idRaw && canonicalSlugRaw && !canonicalSlugRaw.includes("/") && idRaw.includes("/")) {
       const providerPrefix = idRaw.split("/")[0];
       keys.add(normalizeModelId(`${providerPrefix}/${canonicalSlugRaw}`));

@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from llmcost.providers.openrouter_client import (
+from ai_cost_calculator.providers.openrouter_client import (
     clear_openrouter_cache,
     get_openrouter_pricing_map,
 )
@@ -14,7 +14,7 @@ def setup_function():
     clear_openrouter_cache()
 
 
-@patch("llmcost.providers.openrouter_client.httpx.get")
+@patch("ai_cost_calculator.providers.openrouter_client.httpx.get")
 def test_openrouter_client_cache(mock_get):
     mock_get.return_value.status_code = 200
     mock_get.return_value.raise_for_status.return_value = None
@@ -29,7 +29,7 @@ def test_openrouter_client_cache(mock_get):
     assert mock_get.call_count == 1
 
 
-@patch("llmcost.providers.openrouter_client.httpx.get")
+@patch("ai_cost_calculator.providers.openrouter_client.httpx.get")
 def test_openrouter_client_parses_currency_and_canonical_slug(mock_get):
     mock_get.return_value.status_code = 200
     mock_get.return_value.raise_for_status.return_value = None

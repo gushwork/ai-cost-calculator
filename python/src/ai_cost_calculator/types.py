@@ -34,8 +34,3 @@ class ResponseProviderMapping(TypedDict):
 
 
 ResponseMappingsConfig = Dict[str, ResponseProviderMapping]
-
-
-class ModelAliasesConfig(TypedDict):
-    canonical: Dict[str, List[str]]
-    normalized: Dict[str, str]

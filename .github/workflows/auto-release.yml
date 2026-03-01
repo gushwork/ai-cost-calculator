@@ -1,0 +1,72 @@
+name: Auto Release on Version Change
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "node/package.json"
+      - "python/pyproject.toml"
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check node version change
+        id: node
+        run: |
+          current=$(jq -r '.version' node/package.json)
+          prev=$(git show HEAD~1:node/package.json 2>/dev/null | jq -r '.version' || echo "")
+          echo "current=$current" >> $GITHUB_OUTPUT
+          if [ "$current" != "$prev" ] && [ -n "$prev" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check python version change
+        id: python
+        run: |
+          current=$(grep '^version = ' python/pyproject.toml | head -1 | sed 's/version = "\(.*\)"/\1/')
+          prev=$(git show HEAD~1:python/pyproject.toml 2>/dev/null | grep '^version = ' | head -1 | sed 's/version = "\(.*\)"/\1/' || echo "")
+          echo "current=$current" >> $GITHUB_OUTPUT
+          if [ "$current" != "$prev" ] && [ -n "$prev" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Node SDK release
+        if: steps.node.outputs.changed == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const version = '${{ steps.node.outputs.current }}';
+            await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: `node/v${version}`,
+              name: `Node SDK v${version}`,
+              generate_release_notes: true,
+            });
+
+      - name: Create Python SDK release
+        if: steps.python.outputs.changed == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const version = '${{ steps.python.outputs.current }}';
+            await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: `python/v${version}`,
+              name: `Python SDK v${version}`,
+              generate_release_notes: true,
+            });
