@@ -3,6 +3,9 @@ name: Publish to PyPI
 on:
   workflow_call:
   workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
 
 jobs:
   publish:
