@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
     outputs:
       node-changed: ${{ steps.node.outputs.changed }}
       python-changed: ${{ steps.python.outputs.changed }}
