@@ -130,7 +130,12 @@ def infer_provider_from_model(model: str) -> str:
     )
 
 
-def extract_response_metadata(response: Any) -> dict[str, str]:
-    model = extract_response_model(response)
-    provider = infer_provider_from_model(model)
-    return {"model": model, "provider": provider}
+def extract_response_metadata(
+    response: Any,
+    *,
+    model: str | None = None,
+    provider: str | None = None,
+) -> dict[str, str]:
+    resolved_model = model if model is not None else extract_response_model(response)
+    resolved_provider = provider if provider is not None else infer_provider_from_model(resolved_model)
+    return {"model": resolved_model, "provider": resolved_provider}

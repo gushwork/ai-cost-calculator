@@ -15,8 +15,8 @@ from ai_cost_calculator.types import CostResult
 
 class PortkeyBasedCalculator(Calculator):
     @staticmethod
-    def get_cost(response: Any) -> CostResult:
-        metadata = extract_response_metadata(response)
+    def get_cost(response: Any, *, model: str | None = None, provider: str | None = None) -> CostResult:
+        metadata = extract_response_metadata(response, model=model, provider=provider)
         model = metadata["model"]
         provider = metadata["provider"]
         usage = extract_token_usage(response, provider)

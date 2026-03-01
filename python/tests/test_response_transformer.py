@@ -76,3 +76,40 @@ def test_extract_response_metadata_from_berri_provider_map(mock_get):
     )
 
     assert metadata == {"model": "openai/gpt-4o-mini", "provider": "openai"}
+
+
+@patch("ai_cost_calculator.providers.berri_client.httpx.get")
+def test_extract_response_metadata_with_model_override(mock_get):
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.raise_for_status.return_value = None
+    mock_get.return_value.text = (
+        '{"gpt-4o-mini":{"litellm_provider":"openai"}}'
+    )
+
+    metadata = extract_response_metadata(
+        {"usage": {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15}},
+        model="gpt-4o-mini",
+    )
+
+    assert metadata["model"] == "gpt-4o-mini"
+    assert metadata["provider"] == "openai"
+
+
+def test_extract_response_metadata_with_provider_override():
+    metadata = extract_response_metadata(
+        {"model": "my-custom-model", "usage": {"total_tokens": 1}},
+        provider="anthropic",
+    )
+
+    assert metadata["model"] == "my-custom-model"
+    assert metadata["provider"] == "anthropic"
+
+
+def test_extract_response_metadata_with_both_overrides():
+    metadata = extract_response_metadata(
+        {},
+        model="gpt-4o",
+        provider="openai",
+    )
+
+    assert metadata == {"model": "gpt-4o", "provider": "openai"}

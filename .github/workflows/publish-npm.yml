@@ -40,3 +40,29 @@ jobs:
       - run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_API_TOKEN }}
+
+  post-publish-test:
+    name: Post-Publish Smoke Test
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: node/tests/post-publish
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Wait for npm registry propagation
+        run: sleep 15
+
+      - name: Install published package and run smoke test
+        run: |
+          mkdir /tmp/smoke-test && cd /tmp/smoke-test
+          npm init -y
+          sed -i 's/"type": "commonjs"/"type": "module"/' package.json || true
+          npm install ai-cost-calculator@latest
+          cp $GITHUB_WORKSPACE/node/tests/post-publish/smoke.mjs .
+          node smoke.mjs

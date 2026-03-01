@@ -6,13 +6,13 @@ import {
 import { stripProviderPrefix } from "../data/modelResolver.js";
 import { ModelNotFoundError, PricingUnavailableError } from "../errors.js";
 import { getPortkeyPricingMap } from "../providers/portkeyClient.js";
-import type { CostResult } from "../types.js";
+import type { CostOptions, CostResult } from "../types.js";
 import { Calculator } from "./Calculator.js";
 import { computeCost } from "./computeCost.js";
 
 export class PortkeyBasedCalculator extends Calculator {
-  static override async getCost(response: unknown): Promise<CostResult> {
-    const { model, provider } = await extractResponseMetadata(response);
+  static override async getCost(response: unknown, options?: CostOptions): Promise<CostResult> {
+    const { model, provider } = await extractResponseMetadata(response, options);
     const usage = extractTokenUsage(response, provider);
     const pricingMap = await getPortkeyPricingMap();
     const normalizedModel = model.trim().toLowerCase();

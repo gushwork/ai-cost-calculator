@@ -18,11 +18,11 @@ class BestEffortCalculator(Calculator):
     ]
 
     @staticmethod
-    def get_cost(response: Any) -> CostResult:
+    def get_cost(response: Any, *, model: str | None = None, provider: str | None = None) -> CostResult:
         failures: list[Exception] = []
         for calculator in BestEffortCalculator.calculators:
             try:
-                return calculator.get_cost(response)
+                return calculator.get_cost(response, model=model, provider=provider)
             except Exception as exc:  # noqa: BLE001
                 failures.append(exc)
         raise BestEffortCalculationError(failures)

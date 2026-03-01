@@ -93,6 +93,44 @@ def test_openrouter_calculator_cost(mock_get):
     assert result == {"currency": "USD", "cost": 0.00045}
 
 
+@patch("httpx.get")
+def test_berri_calculator_with_model_and_provider_overrides(mock_get):
+    mock_get.return_value = _mock_http_response(
+        '{"gpt-4o-mini":{"input_cost_per_token":0.00000015,"output_cost_per_token":0.0000006,"litellm_provider":"openai"}}'
+    )
+    result = BerrilmBasedCalculator.get_cost(
+        {
+            "usage": {
+                "prompt_tokens": 1000,
+                "completion_tokens": 500,
+                "total_tokens": 1500,
+            },
+        },
+        model="gpt-4o-mini",
+        provider="openai",
+    )
+    assert result == {"currency": "USD", "cost": 0.00045}
+
+
+@patch("httpx.get")
+def test_best_effort_forwards_options(mock_get):
+    mock_get.return_value = _mock_http_response(
+        '{"gpt-4o-mini":{"input_cost_per_token":0.00000015,"output_cost_per_token":0.0000006,"litellm_provider":"openai"}}'
+    )
+    result = BestEffortCalculator.get_cost(
+        {
+            "usage": {
+                "prompt_tokens": 1000,
+                "completion_tokens": 500,
+                "total_tokens": 1500,
+            },
+        },
+        model="gpt-4o-mini",
+        provider="openai",
+    )
+    assert result == {"currency": "USD", "cost": 0.00045}
+
+
 def test_best_effort_fallback():
     with patch("httpx.get") as mock_get:
         mock_get.side_effect = [

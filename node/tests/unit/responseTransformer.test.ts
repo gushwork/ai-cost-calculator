@@ -127,4 +127,44 @@ describe("responseTransformer", () => {
       provider: "openai",
     });
   });
+
+  it("uses model override and skips response extraction", async () => {
+    spyOn(globalThis, "fetch").mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          "gpt-4o-mini": {
+            litellm_provider: "openai",
+          },
+        }),
+        { status: 200 },
+      ),
+    );
+
+    const metadata = await extractResponseMetadata(
+      { usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 } },
+      { model: "gpt-4o-mini" },
+    );
+
+    expect(metadata.model).toBe("gpt-4o-mini");
+    expect(metadata.provider).toBe("openai");
+  });
+
+  it("uses provider override and skips inference", async () => {
+    const metadata = await extractResponseMetadata(
+      { model: "my-custom-model", usage: { total_tokens: 1 } },
+      { provider: "anthropic" },
+    );
+
+    expect(metadata.model).toBe("my-custom-model");
+    expect(metadata.provider).toBe("anthropic");
+  });
+
+  it("uses both model and provider overrides", async () => {
+    const metadata = await extractResponseMetadata(
+      {},
+      { model: "gpt-4o", provider: "openai" },
+    );
+
+    expect(metadata).toEqual({ model: "gpt-4o", provider: "openai" });
+  });
 });

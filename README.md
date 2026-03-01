@@ -38,6 +38,15 @@ console.log(result);
 // { currency: "USD", cost: 0.000225 }
 ```
 
+You can optionally pass `model` and/or `provider` to skip automatic extraction:
+
+```typescript
+const result = await BestEffortCalculator.getCost(response, {
+  model: "gpt-4o-mini",
+  provider: "openai",
+});
+```
+
 ### Python
 
 ```bash
@@ -60,12 +69,165 @@ print(result)
 # {"currency": "USD", "cost": 0.000225}
 ```
 
+You can optionally pass `model` and/or `provider` to skip automatic extraction:
+
+```python
+result = BestEffortCalculator.get_cost(response, model="gpt-4o-mini", provider="openai")
+```
+
 ## How It Works
 
 1. **Extract model** — reads the `model` field from the response.
 2. **Infer provider** — looks up the model in pricing metadata to determine the provider (e.g. `openai`, `anthropic`).
 3. **Extract token usage** — uses provider-specific JSONPath mappings to read input/output/total token counts.
 4. **Resolve pricing** — fetches and caches live pricing data, matches the model, and computes cost as `(input_tokens / 1M) × input_price + (output_tokens / 1M) × output_price`.
+
+## Architecture
+
+### High-Level Overview
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        User Code                                │
+│         getCost({ model: "gpt-4o", usage: { ... } })            │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                   BestEffortCalculator                           │
+│  Tries each pricing source in order until one succeeds          │
+│  OpenRouter → Berri → Portkey → Jina (Node only) → Helicone    │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │
+          ┌────────────────┼────────────────┐
+          ▼                ▼                ▼
+   ┌─────────────┐  ┌───────────┐  ┌──────────────┐
+   │  Response    │  │  Model    │  │   Pricing    │
+   │ Transformer  │  │ Resolver  │  │   Providers  │
+   │             │  │           │  │              │
+   │ Extract      │  │ Normalize │  │ Fetch live   │
+   │ model ID &   │  │ model IDs │  │ pricing from │
+   │ token usage  │  │ & resolve │  │ remote APIs  │
+   │ via JSONPath │  │ aliases   │  │ & cache it   │
+   └──────┬──────┘  └─────┬─────┘  └──────┬───────┘
+          │                │               │
+          ▼                ▼               ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                       computeCost()                             │
+│                                                                 │
+│  cost = (input / 1M) × inputRate                                │
+│       + (cacheRead / 1M) × cacheReadRate                        │
+│       + (cacheCreation / 1M) × cacheCreationRate                │
+│       + (output / 1M) × outputRate                              │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Repository Structure
+
+```
+llmcost-sdk/
+├── configs/                          # Shared config (single source of truth)
+│   ├── response-mappings.json        #   JSONPath mappings for token extraction per provider
+│   └── provider-pricing-mappings.json#   JSONPath mappings for normalizing pricing payloads
+├── node/                             # TypeScript SDK
+│   └── src/
+│       ├── index.ts                  #   Public API exports
+│       ├── types.ts                  #   CostResult, TokenUsage, config interfaces
+│       ├── errors.ts                 #   Error hierarchy (extends LlmcostError)
+│       ├── calculator/               #   Calculator implementations
+│       │   ├── Calculator.ts         #     Abstract base class
+│       │   ├── computeCost.ts        #     Cost formula
+│       │   ├── BestEffortCalculator.ts
+│       │   └── <Source>BasedCalculator.ts
+│       ├── providers/                #   Remote pricing API clients (fetch + cache)
+│       │   └── <source>Client.ts
+│       └── data/                     #   Config loading, model resolution, token extraction
+│           ├── configLoader.ts
+│           ├── responseTransformer.ts
+│           ├── modelResolver.ts
+│           └── aliasBuilder.ts
+├── python/                           # Python SDK (mirrors Node structure)
+│   └── src/ai_cost_calculator/
+│       ├── __init__.py               #   Public API exports
+│       ├── types.py
+│       ├── errors.py
+│       ├── calculator/               #   Calculator implementations
+│       │   ├── base.py
+│       │   ├── cost_utils.py
+│       │   ├── best_effort.py
+│       │   └── <source>.py
+│       ├── providers/                #   Remote pricing API clients (httpx + cache)
+│       │   └── <source>_client.py
+│       └── data/                     #   Config loading, model resolution, token extraction
+│           ├── config_loader.py
+│           ├── response_transformer.py
+│           ├── model_resolver.py
+│           └── alias_builder.py
+└── .github/workflows/               # CI/CD
+    ├── auto-release.yml              #   Detects version bumps, triggers publish
+    ├── publish-npm.yml               #   Build, test, publish to npm, smoke test
+    └── publish-pypi.yml              #   Build, test, publish to PyPI, smoke test
+```
+
+### Data Flow
+
+A cost calculation request goes through four stages:
+
+```
+Response Object
+      │
+      ▼
+ ┌──────────────────────────────────────────────────┐
+ │ 1. Extract Model                                  │
+ │    Read the "model" field from the response        │
+ └───────────────────────┬──────────────────────────┘
+                         ▼
+ ┌──────────────────────────────────────────────────┐
+ │ 2. Infer Provider                                 │
+ │    Look up model in Berri's model→provider map    │
+ │    to determine the provider (openai, anthropic…) │
+ └───────────────────────┬──────────────────────────┘
+                         ▼
+ ┌──────────────────────────────────────────────────┐
+ │ 3. Extract Tokens                                 │
+ │    Load provider-specific JSONPath mappings from   │
+ │    response-mappings.json and extract:             │
+ │    • input tokens   • output tokens                │
+ │    • cache read     • cache creation (if present)  │
+ └───────────────────────┬──────────────────────────┘
+                         ▼
+ ┌──────────────────────────────────────────────────┐
+ │ 4. Resolve Pricing & Compute                      │
+ │    Fetch live pricing → normalize model ID →       │
+ │    match model → apply cost formula                │
+ └───────────────────────┬──────────────────────────┘
+                         ▼
+                   { currency, cost }
+```
+
+### Module Responsibilities
+
+| Layer | Node | Python | Role |
+|-------|------|--------|------|
+| **Calculators** | `calculator/` | `calculator/` | Orchestrate the full flow per pricing source |
+| **Providers** | `providers/` | `providers/` | Fetch, cache, and normalize remote pricing data |
+| **Data** | `data/` | `data/` | Config loading, JSONPath-based token extraction, model normalization and alias resolution |
+| **Shared Config** | `configs/` | `configs/` | Provider-agnostic JSONPath mappings bundled into both SDKs at publish time |
+
+### Key Design Decisions
+
+| Decision | Rationale |
+|----------|-----------|
+| **Shared `configs/` directory** | Single source of truth ensures both SDKs extract tokens and map pricing identically |
+| **Best-effort fallback chain** | Multiple pricing sources improve resilience — if one is down or lacks a model, the next source is tried |
+| **Provider-aware token extraction** | Each LLM provider uses a different response schema; JSONPath mappings handle this without hardcoded parsing |
+| **Provider inference from model ID** | Uses Berri's model→provider map so callers don't need to specify the provider |
+| **Model normalization & aliases** | Strips prefixes (`openai/gpt-4o` → `gpt-4o`), lowercases, and resolves aliases for cross-source consistency |
+| **Cache token support** | Separately priced cache read/creation tokens (Anthropic, OpenAI) are computed with their own rates |
+| **Config resolution order** | `LLMCOST_CONFIGS_DIR` env → bundled package data → repo-root `configs/`; enables local overrides for dev and testing |
+| **Async Node / sync Python** | Node uses native `fetch`; Python uses blocking `httpx` — each follows its ecosystem's conventions |
+| **Independent versioning** | Node and Python packages version and release independently, allowing different cadences |
+| **CI bundles configs at publish** | `configs/*.json` are copied into each SDK's dist at build time so published packages are self-contained |
 
 ## Packages
 
@@ -137,7 +299,7 @@ All errors extend `LlmcostError`:
 
 | Aspect | Node.js | Python |
 |--------|---------|--------|
-| Calculators | All async (`await getCost(...)`) | Synchronous (`get_cost(...)`) |
+| Calculators | All async (`await getCost(response, options?)`) | Synchronous (`get_cost(response, *, model?, provider?)`) |
 | Jina calculator | Yes | No |
 | HTTP client | `fetch` | `httpx` |
 | JSONPath engine | `jsonpath-plus` | `jsonpath-ng` |

@@ -1,5 +1,5 @@
 import { BestEffortCalculationError } from "../errors.js";
-import type { CostResult } from "../types.js";
+import type { CostOptions, CostResult } from "../types.js";
 import { BerrilmBasedCalculator } from "./BerrilmBasedCalculator.js";
 import { Calculator } from "./Calculator.js";
 import { HeliconeBasedCalculator } from "./HeliconeBasedCalculator.js";
@@ -23,12 +23,12 @@ export class BestEffortCalculator extends Calculator {
     HeliconeBasedCalculator,
   ];
 
-  static override async getCost(response: unknown): Promise<CostResult> {
+  static override async getCost(response: unknown, options?: CostOptions): Promise<CostResult> {
     const failures: Error[] = [];
 
     for (const calculator of BestEffortCalculator.calculators) {
       try {
-        return await calculator.getCost(response);
+        return await calculator.getCost(response, options);
       } catch (error) {
         failures.push(error as Error);
       }

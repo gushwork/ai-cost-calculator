@@ -36,3 +36,24 @@ jobs:
           UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
         run: |
           uv publish
+
+  post-publish-test:
+    name: Post-Publish Smoke Test
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: python/tests/post_publish
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Wait for PyPI registry propagation
+        run: sleep 15
+
+      - name: Install published package and run smoke test
+        run: |
+          python -m pip install ai-cost-calculator --no-cache-dir
+          python $GITHUB_WORKSPACE/python/tests/post_publish/smoke.py

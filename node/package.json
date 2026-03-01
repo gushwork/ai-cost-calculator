@@ -1,6 +1,6 @@
 {
   "name": "ai-cost-calculator",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "description": "TypeScript SDK for calculating LLM API costs",
   "type": "module",
   "main": "./dist/index.js",

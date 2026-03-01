@@ -154,6 +154,66 @@ describe("calculators", () => {
     });
   });
 
+  it("calculates cost from berri data with model and provider overrides", async () => {
+    spyOn(globalThis, "fetch").mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          "gpt-4o-mini": {
+            input_cost_per_token: 0.00000015,
+            output_cost_per_token: 0.0000006,
+            litellm_provider: "openai",
+          },
+        }),
+        { status: 200 },
+      ),
+    );
+
+    const result = await BerrilmBasedCalculator.getCost(
+      {
+        usage: {
+          prompt_tokens: 1000,
+          completion_tokens: 500,
+          total_tokens: 1500,
+        },
+      },
+      { model: "gpt-4o-mini", provider: "openai" },
+    );
+    expect(result).toEqual({
+      currency: "USD",
+      cost: 0.00045,
+    });
+  });
+
+  it("best effort forwards options to calculators", async () => {
+    spyOn(globalThis, "fetch").mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          "gpt-4o-mini": {
+            input_cost_per_token: 0.00000015,
+            output_cost_per_token: 0.0000006,
+            litellm_provider: "openai",
+          },
+        }),
+        { status: 200 },
+      ),
+    );
+
+    const result = await BestEffortCalculator.getCost(
+      {
+        usage: {
+          prompt_tokens: 1000,
+          completion_tokens: 500,
+          total_tokens: 1500,
+        },
+      },
+      { model: "gpt-4o-mini", provider: "openai" },
+    );
+    expect(result).toEqual({
+      currency: "USD",
+      cost: 0.00045,
+    });
+  });
+
   it("calculates cost from portkey data directly", async () => {
     spyOn(globalThis, "fetch")
       .mockResolvedValueOnce(

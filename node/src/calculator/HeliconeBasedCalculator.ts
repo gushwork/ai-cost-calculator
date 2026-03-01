@@ -9,13 +9,13 @@ import {
   getHeliconePricingMap,
   heliconePatternLookup,
 } from "../providers/heliconeClient.js";
-import type { CostResult } from "../types.js";
+import type { CostOptions, CostResult } from "../types.js";
 import { Calculator } from "./Calculator.js";
 import { computeCost } from "./computeCost.js";
 
 export class HeliconeBasedCalculator extends Calculator {
-  static override async getCost(response: unknown): Promise<CostResult> {
-    const { model, provider } = await extractResponseMetadata(response);
+  static override async getCost(response: unknown, options?: CostOptions): Promise<CostResult> {
+    const { model, provider } = await extractResponseMetadata(response, options);
     const usage = extractTokenUsage(response, provider);
     const pricingMap = await getHeliconePricingMap();
     const normalizedModel = model.trim().toLowerCase();

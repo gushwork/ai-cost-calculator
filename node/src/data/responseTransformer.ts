@@ -138,8 +138,9 @@ export async function inferProviderFromModel(model: string): Promise<string> {
 
 export async function extractResponseMetadata(
   response: unknown,
+  overrides?: { model?: string; provider?: string },
 ): Promise<{ model: string; provider: string }> {
-  const model = extractResponseModel(response);
-  const provider = await inferProviderFromModel(model);
+  const model = overrides?.model ?? extractResponseModel(response);
+  const provider = overrides?.provider ?? await inferProviderFromModel(model);
   return { model, provider };
 }

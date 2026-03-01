@@ -1,19 +1,22 @@
 import {
-  extractResponseModel,
+  extractResponseMetadata,
   extractTokenUsage,
   getInputIncludesCacheRead,
 } from "../data/responseTransformer.js";
 import { stripProviderPrefix } from "../data/modelResolver.js";
 import { ModelNotFoundError, PricingUnavailableError } from "../errors.js";
 import { getJinaPricingMap } from "../providers/jinaClient.js";
-import type { CostResult } from "../types.js";
+import type { CostOptions, CostResult } from "../types.js";
 import { Calculator } from "./Calculator.js";
 import { computeCost } from "./computeCost.js";
 
 export class JinaBasedCalculator extends Calculator {
-  static override async getCost(response: unknown): Promise<CostResult> {
-    const model = extractResponseModel(response);
-    const usage = extractTokenUsage(response, "jina_ai");
+  static override async getCost(response: unknown, options?: CostOptions): Promise<CostResult> {
+    const { model, provider } = await extractResponseMetadata(response, {
+      ...options,
+      provider: options?.provider ?? "jina_ai",
+    });
+    const usage = extractTokenUsage(response, provider);
     const pricingMap = await getJinaPricingMap();
     const normalizedModel = model.trim().toLowerCase();
     const pricing =
@@ -29,7 +32,7 @@ export class JinaBasedCalculator extends Calculator {
       );
     }
 
-    const cost = computeCost(usage, pricing, getInputIncludesCacheRead("jina_ai"));
+    const cost = computeCost(usage, pricing, getInputIncludesCacheRead(provider));
     return { currency: "USD", cost };
   }
 }

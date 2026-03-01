@@ -13,6 +13,11 @@ export interface TokenUsage {
   cacheCreationTokens?: number;
 }
 
+export interface CostOptions {
+  model?: string;
+  provider?: string;
+}
+
 export interface CalculatorInput {
   response: unknown;
 }

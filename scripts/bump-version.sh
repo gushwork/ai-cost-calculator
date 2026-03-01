@@ -34,6 +34,11 @@ NEW="$MAJOR.$MINOR.$PATCH"
 jq --arg v "$NEW" '.version = $v' "$NODE_PKG" > "$NODE_PKG.tmp" && mv "$NODE_PKG.tmp" "$NODE_PKG"
 
 # Update python/pyproject.toml
-sed -i.bak "s/^version = \"$CURRENT\"/version = \"$NEW\"/" "$PYTHON_TOML" && rm "$PYTHON_TOML.bak"
+PYTHON_CURRENT=$(grep -m1 '^version' "$PYTHON_TOML" | sed 's/version = "\(.*\)"/\1/')
+sed -i.bak "s/^version = \"$PYTHON_CURRENT\"/version = \"$NEW\"/" "$PYTHON_TOML" && rm "$PYTHON_TOML.bak"
+
+# Sync lockfiles
+(cd "$ROOT_DIR/node" && bun i)
+(cd "$ROOT_DIR/python" && uv sync)
 
 echo "$CURRENT → $NEW"
