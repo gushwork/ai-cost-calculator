@@ -14,9 +14,17 @@ export interface TokenUsage {
   cacheCreationTokens?: number;
 }
 
+export interface CustomPricing {
+  inputCostPer1M: number;
+  outputCostPer1M: number;
+  cacheReadCostPer1M?: number;
+  cacheCreationCostPer1M?: number;
+}
+
 export interface CostOptions {
   model?: string;
   provider?: string;
+  pricing?: CustomPricing;
 }
 
 export interface CalculatorInput {

@@ -8,7 +8,7 @@ from ai_cost_calculator.calculator.helicone import HeliconeBasedCalculator
 from ai_cost_calculator.calculator.openrouter import OpenRouterBasedCalculator
 from ai_cost_calculator.calculator.portkey import PortkeyBasedCalculator
 from ai_cost_calculator.errors import BestEffortCalculationError, LlmcostError
-from ai_cost_calculator.types import CostResult
+from ai_cost_calculator.types import CostResult, CustomPricing
 
 
 class BestEffortCalculator(Calculator):
@@ -20,7 +20,18 @@ class BestEffortCalculator(Calculator):
     ]
 
     @staticmethod
-    def get_cost(response: Any, *, model: str | None = None, provider: str | None = None) -> CostResult:
+    def get_cost(
+        response: Any,
+        *,
+        model: str | None = None,
+        provider: str | None = None,
+        pricing: CustomPricing | None = None,
+    ) -> CostResult:
+        if pricing is not None:
+            return BestEffortCalculator.calculators[0].get_cost(
+                response, model=model, provider=provider, pricing=pricing,
+            )
+
         failures: list[Exception] = []
         for calculator in BestEffortCalculator.calculators:
             try:

@@ -163,6 +163,45 @@ def test_berri_calculator_omits_tool_call_cost_without_tools(mock_get):
     assert "tool_call_cost" not in result
 
 
+def test_custom_pricing_skips_external_lookup():
+    result = BerrilmBasedCalculator.get_cost(
+        RESPONSE,
+        provider="openai",
+        pricing={"input_cost_per_1m": 0.0455, "output_cost_per_1m": 0},
+    )
+    assert result == {"currency": "USD", "cost": 0.0000455}
+
+
+def test_best_effort_custom_pricing_skips_all_sources():
+    result = BestEffortCalculator.get_cost(
+        RESPONSE,
+        provider="openai",
+        pricing={"input_cost_per_1m": 0.0455, "output_cost_per_1m": 0},
+    )
+    assert result == {"currency": "USD", "cost": 0.0000455}
+
+
+def test_custom_pricing_with_cache_rates():
+    result = BerrilmBasedCalculator.get_cost(
+        {
+            "model": "gpt-4o-mini",
+            "usage": {
+                "prompt_tokens": 1000,
+                "completion_tokens": 500,
+                "total_tokens": 1500,
+                "prompt_tokens_details": {"cached_tokens": 200},
+            },
+        },
+        provider="openai",
+        pricing={
+            "input_cost_per_1m": 10,
+            "output_cost_per_1m": 20,
+            "cache_read_cost_per_1m": 2,
+        },
+    )
+    assert result["cost"] > 0
+
+
 def test_best_effort_fallback():
     with patch("httpx.get") as mock_get:
         mock_get.side_effect = [

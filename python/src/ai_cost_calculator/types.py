@@ -35,6 +35,15 @@ class NormalizedPricingModel:
     tool_use_system_prompt_tokens: Optional[int] = None
 
 
+class _CustomPricingRequired(TypedDict):
+    input_cost_per_1m: float
+    output_cost_per_1m: float
+
+class CustomPricing(_CustomPricingRequired, total=False):
+    cache_read_cost_per_1m: float
+    cache_creation_cost_per_1m: float
+
+
 class _ResponseProviderMappingRequired(TypedDict):
     inputTokensPaths: List[str]
     outputTokensPaths: List[str]

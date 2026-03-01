@@ -23,24 +23,39 @@ export abstract class Calculator {
     response: unknown,
     options?: CostOptions,
   ): Promise<CostResult> {
-    const { name, getPricingMap, customLookup } = this.pricingSource;
     const { model, provider } = await extractResponseMetadata(response, options);
     const usage = extractTokenUsage(response, provider);
-    const pricingMap = await getPricingMap();
-    const normalizedModel = normalizeModelId(model);
-    const bareModel = stripProviderPrefix(normalizedModel);
-    const pricing =
-      pricingMap.get(normalizedModel) ??
-      pricingMap.get(bareModel) ??
-      customLookup?.(pricingMap, normalizedModel);
 
-    if (!pricing) {
-      throw new ModelNotFoundError(`Model "${model}" not found in ${name} pricing.`);
-    }
-    if (pricing.inputCostPer1M < 0 || pricing.outputCostPer1M < 0) {
-      throw new PricingUnavailableError(
-        `Model "${model}" has invalid ${name} pricing values.`,
-      );
+    let pricing: NormalizedPricingModel;
+
+    if (options?.pricing) {
+      pricing = {
+        modelId: model,
+        inputCostPer1M: options.pricing.inputCostPer1M,
+        outputCostPer1M: options.pricing.outputCostPer1M,
+        cacheReadCostPer1M: options.pricing.cacheReadCostPer1M,
+        cacheCreationCostPer1M: options.pricing.cacheCreationCostPer1M,
+        currency: "USD",
+      };
+    } else {
+      const { name, getPricingMap, customLookup } = this.pricingSource;
+      const pricingMap = await getPricingMap();
+      const normalizedModel = normalizeModelId(model);
+      const bareModel = stripProviderPrefix(normalizedModel);
+      const found =
+        pricingMap.get(normalizedModel) ??
+        pricingMap.get(bareModel) ??
+        customLookup?.(pricingMap, normalizedModel);
+
+      if (!found) {
+        throw new ModelNotFoundError(`Model "${model}" not found in ${name} pricing.`);
+      }
+      if (found.inputCostPer1M < 0 || found.outputCostPer1M < 0) {
+        throw new PricingUnavailableError(
+          `Model "${model}" has invalid ${name} pricing values.`,
+        );
+      }
+      pricing = found;
     }
 
     const baseCost = computeCost(usage, pricing, getInputIncludesCacheRead(provider));

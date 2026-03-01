@@ -49,6 +49,18 @@ import {
 const result = await BerrilmBasedCalculator.getCost(response);
 ```
 
+### Custom Pricing
+
+Override external pricing with your own rates (e.g. bulk or negotiated pricing):
+
+```typescript
+const result = await BestEffortCalculator.getCost(response, {
+  pricing: { inputCostPer1M: 0.0455, outputCostPer1M: 0 },
+});
+```
+
+When `pricing` is provided, no external pricing APIs are called. Both `inputCostPer1M` and `outputCostPer1M` are required. Cache token rates (`cacheReadCostPer1M`, `cacheCreationCostPer1M`) are optional. Works with any calculator, not just `BestEffortCalculator`.
+
 ### With Provider-Prefixed Models
 
 Models prefixed with a provider (e.g. from OpenRouter) are automatically normalized:

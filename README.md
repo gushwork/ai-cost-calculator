@@ -76,6 +76,29 @@ You can optionally pass `model` and/or `provider` to skip automatic extraction:
 result = BestEffortCalculator.get_cost(response, model="gpt-4o-mini", provider="openai")
 ```
 
+### Custom Pricing
+
+Override the external pricing lookup with your own rates (e.g. bulk or negotiated pricing):
+
+**Node.js / TypeScript:**
+
+```typescript
+const result = await BestEffortCalculator.getCost(response, {
+  pricing: { inputCostPer1M: 0.0455, outputCostPer1M: 0 },
+});
+```
+
+**Python:**
+
+```python
+result = BestEffortCalculator.get_cost(
+    response,
+    pricing={"input_cost_per_1m": 0.0455, "output_cost_per_1m": 0},
+)
+```
+
+When `pricing` is provided, no external pricing APIs are called. Both `inputCostPer1M` and `outputCostPer1M` are required. Cache token rates (`cacheReadCostPer1M`, `cacheCreationCostPer1M`) are optional.
+
 ## How It Works
 
 1. **Extract model** — reads the `model` field from the response.

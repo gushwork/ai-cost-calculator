@@ -21,6 +21,10 @@ export class BestEffortCalculator extends Calculator {
   ];
 
   static override async getCost(response: unknown, options?: CostOptions): Promise<CostResult> {
+    if (options?.pricing) {
+      return BestEffortCalculator.calculators[0].getCost(response, options);
+    }
+
     const failures: Error[] = [];
 
     for (const calculator of BestEffortCalculator.calculators) {

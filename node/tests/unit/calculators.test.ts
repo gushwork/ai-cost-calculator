@@ -261,6 +261,63 @@ describe("calculators", () => {
     expect(result.toolCallCost).toBeUndefined();
   });
 
+  it("uses custom pricing and skips external lookup", async () => {
+    const fetchSpy = spyOn(globalThis, "fetch");
+
+    const result = await BerrilmBasedCalculator.getCost(response, {
+      provider: "openai",
+      pricing: { inputCostPer1M: 0.0455, outputCostPer1M: 0 },
+    });
+
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      currency: "USD",
+      cost: 0.0000455,
+    });
+  });
+
+  it("best effort uses custom pricing without trying multiple sources", async () => {
+    const fetchSpy = spyOn(globalThis, "fetch");
+
+    const result = await BestEffortCalculator.getCost(response, {
+      provider: "openai",
+      pricing: { inputCostPer1M: 0.0455, outputCostPer1M: 0 },
+    });
+
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      currency: "USD",
+      cost: 0.0000455,
+    });
+  });
+
+  it("custom pricing supports cache token rates", async () => {
+    const fetchSpy = spyOn(globalThis, "fetch");
+
+    const result = await BerrilmBasedCalculator.getCost(
+      {
+        model: "gpt-4o-mini",
+        usage: {
+          prompt_tokens: 1000,
+          completion_tokens: 500,
+          total_tokens: 1500,
+          prompt_tokens_details: { cached_tokens: 200 },
+        },
+      },
+      {
+        provider: "openai",
+        pricing: {
+          inputCostPer1M: 10,
+          outputCostPer1M: 20,
+          cacheReadCostPer1M: 2,
+        },
+      },
+    );
+
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(result.cost).toBeGreaterThan(0);
+  });
+
   it("calculates cost from portkey data directly", async () => {
     spyOn(globalThis, "fetch")
       .mockResolvedValueOnce(
