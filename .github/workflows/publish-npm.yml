@@ -1,13 +1,13 @@
 name: Publish to npm
 
 on:
-  push:
-    tags:
-      - "v*-node"
+  release:
+    types: [published]
 
 jobs:
   publish:
     name: Build and Publish
+    if: endsWith(github.event.release.tag_name, '-node')
     runs-on: ubuntu-latest
     permissions:
       contents: read

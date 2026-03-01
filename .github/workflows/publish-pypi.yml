@@ -1,13 +1,13 @@
 name: Publish to PyPI
 
 on:
-  push:
-    tags:
-      - "v*-python"
+  release:
+    types: [published]
 
 jobs:
   publish:
     name: Build and Publish
+    if: endsWith(github.event.release.tag_name, '-python')
     runs-on: ubuntu-latest
     permissions:
       contents: read
