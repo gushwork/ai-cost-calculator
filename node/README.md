@@ -1,4 +1,4 @@
-# ai-cost-calculator (Node.js)
+# ai-cost-calculator
 
 TypeScript SDK for calculating LLM API costs from provider response payloads with automatic usage extraction and live pricing lookups.
 

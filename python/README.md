@@ -1,4 +1,4 @@
-# ai-cost-calculator (Python)
+# ai-cost-calculator
 
 Python SDK for calculating LLM API costs from provider response payloads with automatic usage extraction and live pricing lookups.
 
