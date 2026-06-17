@@ -1,26 +1,35 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import type { ResponseMappingsConfig } from "../types.js";
-import bundledResponseMappings from "./response-mappings.json" with { type: "json" };
 
-function readJsonFile<T>(dir: string, fileName: string): T {
-  const raw = readFileSync(path.join(dir, fileName), "utf-8");
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const BUNDLED_DIR = __dirname;
+const REPO_CONFIGS_DIR = path.resolve(__dirname, "../../../configs");
+
+function resolveConfigsDir(): string {
+  if (process.env.LLMCOST_CONFIGS_DIR) {
+    return process.env.LLMCOST_CONFIGS_DIR;
+  }
+  if (existsSync(path.join(BUNDLED_DIR, "response-mappings.json"))) {
+    return BUNDLED_DIR;
+  }
+  if (existsSync(REPO_CONFIGS_DIR)) {
+    return REPO_CONFIGS_DIR;
+  }
+  return BUNDLED_DIR;
+}
+
+function readJsonFile<T>(fileName: string): T {
+  const raw = readFileSync(path.join(resolveConfigsDir(), fileName), "utf-8");
   return JSON.parse(raw) as T;
 }
 
 let _responseMappingsCache: ResponseMappingsConfig | null = null;
 export function loadResponseMappingsConfig(): ResponseMappingsConfig {
   if (!_responseMappingsCache) {
-    const overrideDir = process.env.LLMCOST_CONFIGS_DIR;
-    if (overrideDir) {
-      _responseMappingsCache = readJsonFile<ResponseMappingsConfig>(
-        overrideDir,
-        "response-mappings.json",
-      );
-    } else {
-      _responseMappingsCache = bundledResponseMappings as ResponseMappingsConfig;
-    }
+    _responseMappingsCache = readJsonFile<ResponseMappingsConfig>("response-mappings.json");
   }
   return _responseMappingsCache;
 }

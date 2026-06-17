@@ -63,6 +63,6 @@ jobs:
           mkdir /tmp/smoke-test && cd /tmp/smoke-test
           npm init -y
           node -e "const p=require('./package.json'); p.type='module'; require('fs').writeFileSync('package.json', JSON.stringify(p, null, 2))"
-          npm install ai-cost-calculator@latest esbuild
+          npm install ai-cost-calculator@latest
           cp $GITHUB_WORKSPACE/node/tests/post-publish/smoke.mjs .
           node smoke.mjs
