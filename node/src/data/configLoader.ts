@@ -1,35 +1,24 @@
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
 import type { ResponseMappingsConfig } from "../types.js";
+import bundledMappings from "./response-mappings.json" with { type: "json" };
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const BUNDLED_DIR = __dirname;
-const REPO_CONFIGS_DIR = path.resolve(__dirname, "../../../configs");
-
-function resolveConfigsDir(): string {
-  if (process.env.LLMCOST_CONFIGS_DIR) {
-    return process.env.LLMCOST_CONFIGS_DIR;
+function loadFromEnvDir(): ResponseMappingsConfig {
+  const configsDir = process.env.LLMCOST_CONFIGS_DIR;
+  if (!configsDir) {
+    throw new Error("LLMCOST_CONFIGS_DIR is not set");
   }
-  if (existsSync(path.join(BUNDLED_DIR, "response-mappings.json"))) {
-    return BUNDLED_DIR;
-  }
-  if (existsSync(REPO_CONFIGS_DIR)) {
-    return REPO_CONFIGS_DIR;
-  }
-  return BUNDLED_DIR;
-}
-
-function readJsonFile<T>(fileName: string): T {
-  const raw = readFileSync(path.join(resolveConfigsDir(), fileName), "utf-8");
-  return JSON.parse(raw) as T;
+  const raw = readFileSync(path.join(configsDir, "response-mappings.json"), "utf-8");
+  return JSON.parse(raw) as ResponseMappingsConfig;
 }
 
 let _responseMappingsCache: ResponseMappingsConfig | null = null;
 export function loadResponseMappingsConfig(): ResponseMappingsConfig {
   if (!_responseMappingsCache) {
-    _responseMappingsCache = readJsonFile<ResponseMappingsConfig>("response-mappings.json");
+    _responseMappingsCache = process.env.LLMCOST_CONFIGS_DIR
+      ? loadFromEnvDir()
+      : (bundledMappings as ResponseMappingsConfig);
   }
   return _responseMappingsCache;
 }
